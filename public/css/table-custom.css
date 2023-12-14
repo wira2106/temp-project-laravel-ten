@@ -1,0 +1,42 @@
+/* styling table master-alasan pb darurat */
+.table-container {
+  max-height: 460px;
+  overflow-y: scroll;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; /* Add a background color for the sticky header */
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #dee2e6; /* Add a border color for the cells */
+    padding: 8px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  /* selected data when clicked */
+  .selected-row {
+    background-color: #007bff;
+    color: #ffffff;
+  }
+
+.select2-container--default.select2-container--open {
+    border-color: #007bff;
+    width: 100% !important;
+}
+.select2-container {
+    box-sizing: border-box;
+    display: inline-block;
+    margin: 0;
+    position: relative;
+    vertical-align: middle;
+    width: 100% !important;
+}
