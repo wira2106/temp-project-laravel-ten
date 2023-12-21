@@ -9,7 +9,7 @@ $('.form_data').submit(function (e) {
     form.find('.form-control').removeClass('is-invalid');
     form.find('.help-block').remove();
     Swal.fire({
-        title: $text,
+        title: text,
         showDenyButton: true,
         showCancelButton: true,
         confirmButtonText: `Ya`,
