@@ -6,6 +6,7 @@
     @lang('KARTU GUDANG')
 @endsection
 
+
 @section('title')
     ** @lang('KARTU GUDANG') **
 @endsection
@@ -69,7 +70,7 @@
            margin-bottom: 10px;
        }
        .rotate-tag {
-            margin-left: -170px;
+            margin-left: -110px;
             /* Rotate the element by 45 degrees */
             transform: rotate(90deg) scale(0.5);
             /* Optional: Set the transform origin to center the rotation */
@@ -78,7 +79,7 @@
             display: inline-block;
         }
        .rotate-2 {
-            margin-left: -200px;
+            margin-left: -137px;
             /* Rotate the element by 45 degrees */
             transform: rotate(270deg) scale(0.5);
             /* Optional: Set the transform origin to center the rotation */
@@ -127,7 +128,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -169,7 +170,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -211,7 +212,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -253,7 +254,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -295,7 +296,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -337,7 +338,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -379,7 +380,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -421,7 +422,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -463,7 +464,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -505,7 +506,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -547,7 +548,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -589,7 +590,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -631,7 +632,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -673,7 +674,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -715,7 +716,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -757,7 +758,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -799,7 +800,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -841,7 +842,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -883,7 +884,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -925,7 +926,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -967,7 +968,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1009,7 +1010,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1051,7 +1052,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1093,7 +1094,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1135,7 +1136,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1177,7 +1178,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1219,7 +1220,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1261,7 +1262,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1303,7 +1304,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1345,7 +1346,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1387,7 +1388,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1429,7 +1430,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
@@ -1471,7 +1472,7 @@
                  </table>
              </div>
              <div class="rotate-tag">
-                 {!! DNS1D::getBarcodeHTML('121412', 'C39') !!}
+                 {!! DNS1D::getBarcodeHTML('121412', 'C128') !!}
              </div>
              <div class="rotate-2">
                  NR12B 0212
