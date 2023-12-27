@@ -260,7 +260,7 @@
       
         
 
-        $( document ).ready(function() {
+        //$( document ).ready(function() {
         //     var curURL = window.location.href;
         //     namaFile = 'helvin';
         //     // // console.log(curURL)
@@ -271,21 +271,21 @@
         //     link.download = namaFile;
         //     link.dispatchEvent(new MouseEvent('click'));
 
-        // $(".btn-print").on("click", function () {
-        //     console.log('ok')
-        //     html2canvas($('.report-container')[0], {
-        //         onrendered: function (canvas) {
-        //             var data = canvas.toDataURL();
-        //             var docDefinition = {
-        //                 content: [{
-        //                     image: data,
-        //                     width: 500
-        //                 }]
-        //             };
-        //             pdfMake.createPdf(docDefinition).download("customer-details.pdf");
-        //         }
-        //     });
-        // });
+            // $(".btn-print").on("click", function () {
+            //     console.log('ok')
+            //     html2canvas($('.report-container')[0], {
+            //         onrendered: function (canvas) {
+            //             var data = canvas.toDataURL();
+            //             var docDefinition = {
+            //                 content: [{
+            //                     image: data,
+            //                     width: 500
+            //                 }]
+            //             };
+            //             pdfMake.createPdf(docDefinition).download("customer-details.pdf");
+            //         }
+            //     });
+            // });
         // });
 
         
