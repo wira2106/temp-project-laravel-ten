@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\LibraryPDF;
 use App\Transformers\DataMasterProdukTransformers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -9,6 +10,7 @@ use DB;
 
 class LabelController extends Controller
 {
+    use LibraryPDF;
     public $DB_PGSQL;
     public function __construct()
     { 
@@ -51,5 +53,6 @@ class LabelController extends Controller
 
     public function cetak(){
         return view('template-print.print');
+        // return $this->printPDF();
     }
 }
