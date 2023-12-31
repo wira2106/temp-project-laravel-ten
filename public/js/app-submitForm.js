@@ -1,21 +1,39 @@
-$('#form_data').submit(function (e) {
+$('.form_data').submit(function (e) {
     e.preventDefault();
-    let form = $('#form_data'),
-        text = $('.text').val()?$('.text').val():'Menyimpan',
+    let form = $('.form_data'),
+        text = $('.text').val()?$('.text').val():'Apakah Anda ingin Menyimpan Data Ini?',
         url = form.attr('action'),
+        formData = new FormData(this),
         method = form.attr('method') == undefined ? 'PUT' : 'POST',
-        redirect = $("input[name='redirect']").val(),
-        download = $("input[name='download']").val();
+        /**
+         * defind input when use multi form
+         */
+        multipleForm = (formData.getAll('multipleForm')[0])? formData.getAll('multipleForm')[0]:'',
+        /**
+         * defind link redirect , download or run next function after submit
+         * 
+         * it get value in input (for redirect and download) and get function in onchange (for run next function)
+         */
+        runNext =  (document.getElementById('runNext'+multipleForm))?document.getElementById('runNext'+multipleForm).onchange:null,
+        redirect = formData.getAll('redirect'+multipleForm)[0],
+        download = formData.getAll('download'+multipleForm)[0];
+        
     form.find('.form-control').removeClass('is-invalid');
     form.find('.help-block').remove();
+    /**
+     * delete in Form Data
+     */
+    formData.delete('multipleForm')
+    formData.delete('redirect'+multipleForm)
+    formData.delete('download'+multipleForm)
     Swal.fire({
-        title: 'Apakah Anda ingin '+text+' Data Ini?',
+        title: text,
         showDenyButton: true,
         showCancelButton: true,
         confirmButtonText: `Ya`,
         denyButtonText: `Tidak`,
     }).then((result) => {
-    /* Read more about isConfirmed, isDenied below */
+        /* Read more about isConfirmed, isDenied below */
         if (result.value) {
             load = 1;
              Swal.fire({
@@ -32,33 +50,36 @@ $('#form_data').submit(function (e) {
                 data: new FormData(this),
     
                 success: function (response) {
+                    let messages = response.responseJSON.messages?xhr.responseJSON.messages:'Data Berhasil Diproses';
                     Swal.fire(
-                        'Tersimpan!',
-                        'Data telah tersimpan.',
+                        'Berhasil',
+                         messages,
                         'success'
                     )
-                   if(download !== '' && download !== null && download !== undefined){
+                   if(download !== '' && download !== null && download !== undefined ){
                        window.open(download,'_blank');
+                   }
+                   if(redirect !== '' && redirect !== null && redirect !== undefined){
+                       window.location.href = redirect
                    } 
-                    window.location.href = redirect
+                   if(runNext !== '' && runNext !== null && runNext !== undefined){
+                        runNext.call()
+                   } 
                 },
                 error: function (xhr) {
-                    Swal.fire(
-                        'Tersimpan!',
-                        'Data telah tersimpan.',
-                        'success'
-                    )
+
+                    let res = xhr.responseJSON,
+                        messages = xhr.responseJSON.messages?xhr.responseJSON.messages:'Harap Periksa kembali data yang anda input';
+                        
                      Swal.fire({
-                        title: 'Data tidak dapat di Simpan',
-                        html: 'Harap Isi Dengan Benar',
+                        title: 'Gagal',
+                        html: messages,
                         icon: 'warning',
                         allowOutsideClick: false,
                         onOpen: () => {
                                 swal.hideLoading()
                         }
                     });
-                    let res = xhr.responseJSON;
-                    console.log(res);
                     if ($.isEmptyObject(res) == false) {
                         $.each(res.errors, function (i, value) {
                             $('#' + i).addClass('is-invalid');
@@ -72,5 +93,6 @@ $('#form_data').submit(function (e) {
                 dataType: "json"
             });  
         }
+        /* Read more about isConfirmed, isDenied below */
     });
 });
