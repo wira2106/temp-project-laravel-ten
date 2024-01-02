@@ -1,6 +1,6 @@
 $('.form_data').submit(function (e) {
     e.preventDefault();
-    let form = $('.form_data'),
+    let form = $(this),
         text = $('.text').val()?$('.text').val():'Apakah Anda ingin Menyimpan Data Ini?',
         url = form.attr('action'),
         formData = new FormData(this),
@@ -50,16 +50,20 @@ $('.form_data').submit(function (e) {
                 data: new FormData(this),
     
                 success: function (response) {
-                    let messages = response.responseJSON.messages?xhr.responseJSON.messages:'Data Berhasil Diproses';
+
+                    // console.log(response.download,response.redirect,runNext,multipleForm)
+                    let messages = response.messages?response.messages:'Data Berhasil Diproses';
                     Swal.fire(
                         'Berhasil',
                          messages,
                         'success'
                     )
-                   if(download !== '' && download !== null && download !== undefined ){
-                       window.open(download,'_blank');
+                   if((download !== '' && download !== null && download !== undefined ) || (response.download !== '' && response.download !== null && response.download !== undefined)){
+                        download = response.download?response.download:download;
+                        window.open(download,'_blank');
                    }
-                   if(redirect !== '' && redirect !== null && redirect !== undefined){
+                   if((redirect !== '' && redirect !== null && redirect !== undefined) || (response.redirect !== '' && response.redirect !== null && response.redirect !== undefined)){
+                       redirect = response.redirect?response.redirect:redirect;
                        window.location.href = redirect
                    } 
                    if(runNext !== '' && runNext !== null && runNext !== undefined){
