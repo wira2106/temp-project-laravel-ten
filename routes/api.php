@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LabelController;
+use App\Http\Controllers\CetakKoliController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +20,3 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::get('/label/data/produk', [LabelController::class, 'data_master']);

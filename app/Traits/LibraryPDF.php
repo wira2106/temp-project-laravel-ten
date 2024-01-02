@@ -16,7 +16,7 @@ trait LibraryPDF
 
            
             $canvas = $dompdf ->get_canvas();
-            $canvas->page_text(617, 62.75, "{PAGE_NUM} of {PAGE_COUNT}", null, 7, array(0, 0, 0));
+            $canvas->page_text(617, 25, "{PAGE_NUM} of {PAGE_COUNT}", null, 7, array(0, 0, 0));
             
         } else {
             $pdf = PDF::loadview('PDF.default', compact(['data']));
@@ -25,7 +25,7 @@ trait LibraryPDF
 
            
             $canvas = $dompdf ->get_canvas();
-            $canvas->page_text(617, 30, "{PAGE_NUM} of {PAGE_COUNT}", null, 7, array(0, 0, 0));
+            $canvas->page_text(617, 25, "{PAGE_NUM} of {PAGE_COUNT}", null, 7, array(0, 0, 0));
             
         }
         if ($download) {
