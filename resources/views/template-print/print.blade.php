@@ -18,7 +18,7 @@
        }
        .labelCardContainer {
             index:1;
-           font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             margin-right: -100px;
             margin-top:3px;
