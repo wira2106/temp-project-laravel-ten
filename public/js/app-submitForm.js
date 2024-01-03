@@ -1,7 +1,7 @@
 $('#form_data').submit(function (e) {
     e.preventDefault();
     let form = $(this),
-        text = $('.text').val()?$('.text').val():'Apakah Anda ingin Menyimpan Data Ini?',
+        text = form.find('.text').val()?$('.text').val():'Apakah Anda ingin Menyimpan Data Ini?',
         url = form.attr('action'),
         formData = new FormData(this),
         method = form.attr('method') == undefined ? 'PUT' : 'POST',
