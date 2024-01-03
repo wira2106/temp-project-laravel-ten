@@ -65,7 +65,8 @@ get_last_row =()=>{
        listMasterProduk = [];
    $.getJSON(link + "/api/obi/get_last_row", function(data) {
 
-      $('#nomor_terakhir').val(data.data);
+      $('#nomor_terakhir_display').val(data.data.nomor_terakhir_display);
+      $('#nomor_terakhir').val(data.data.nomor_terakhir);
    })
 
 }
@@ -119,10 +120,12 @@ cetak_omi=(cetak)=>{
 cetak_omi_reprint=(cetak)=>{
    let jarak_atas = $("#jarak_atas").val(),
        jarak_kiri = $("#jarak_kiri").val(),
+       nomor_terakhir_display = $("#nomor_terakhir_display").val(),
        nomor_terakhir = $("#nomor_terakhir").val();
 
         $("#jarak_atas_omi_reprint").val(jarak_atas)
         $("#jarak_kiri_omi_reprint").val(jarak_kiri)
+        $("#nomor_terakhir_display_reprint").val(nomor_terakhir_display)
         $("#nomor_terakhir_reprint").val(nomor_terakhir)
 
        $(cetak).submit();

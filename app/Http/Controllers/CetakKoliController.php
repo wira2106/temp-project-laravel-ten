@@ -90,22 +90,21 @@ class CetakKoliController extends Controller
             'jarak_kiri' => 'required',
             'input1' => [
                 'required',
-                function ($attribute, $value, $fail) use($nomor_terakhir) {
+                function ($attribute, $value, $fail) use($nomor_terakhir,$input2) {
                    
                     if ($value > $nomor_terakhir) {
                         $fail($attribute . ' more bigger than nomor terakhir');
+                    }
+                    if ($input2 >$value ) {
+                        $fail($attribute . ' more bigger than input1');
                     }
                 }
             ],
             'input2' => [
                 'required',
-                function ($attribute, $value, $fail) use($nomor_terakhir,$input2) {
-                    
-                    if ($value > $input2) {
+                function ($attribute, $value, $fail) use($nomor_terakhir,$input1) {
+                    if ($value > $nomor_terakhir) {
                         $fail($attribute . ' more bigger than nomor terakhir');
-                    }
-                    if ($value > $input2) {
-                        $fail($attribute . ' more bigger than input1');
                     }
                 }
             ],
@@ -248,20 +247,40 @@ class CetakKoliController extends Controller
 
     public function cetak_obi_reprint(Request $request){
     
+        $ls = [];
+        $errmsg = '';
+        $nomor_terakhir_display = $request->nomor_terakhir_display;
+        $nomor_terakhir = $request->nomor_terakhir;
+        $JarakAtas = $request->jarak_atas;
+        $JarakKiri = $request->jarak_kiri;
+
+        $input1 = $request->input1;
+        $input2 = $request->input2;
         $this->validate($request, [
-            'input1' => 'required|min:13',
-            'input2' => 'required|min:13',
+            'input1' => [
+                'required',
+                function ($attribute, $value, $fail) use($nomor_terakhir_display,$input2) {
+                   
+                    if ($value > $nomor_terakhir_display) {
+                        $fail($attribute . ' more bigger than nomor terakhir');
+                    }
+                    if ($input2 >$value ) {
+                        $fail($attribute . ' more bigger than input2');
+                    }
+                }
+            ],
+            'input2' => [
+                'required',
+                function ($attribute, $value, $fail) use($nomor_terakhir_display,$input1) {
+                    if ($value > $nomor_terakhir_display) {
+                        $fail($attribute . ' more bigger than nomor terakhir');
+                    }
+                }
+            ],
             'jarak_atas' => 'required',
             'jarak_kiri' => 'required',
         ]);
 
-        $ls = [];
-        $errmsg = '';
-        $nomor_terakhir = $request->nomor_terakhir;
-        $JarakAtas = $request->jarak_atas;
-        $JarakKiri = $request->jarak_kiri;
-        $input1 = str_replace(' ', '', $request->input1);
-        $input2 = str_replace(' ', '', $request->input2);
 
         for ($i = (int)substr($input1, -5); $i <= (int)substr($input2, -5); $i += 2) {
             if ($i + 1 > (int)substr($input2, -5)) {
@@ -318,7 +337,7 @@ class CetakKoliController extends Controller
             if ($result) {
                 $tmp = $result->obr_barcode;
                 $last = (int)substr($tmp, -5);
-                return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>$last],200);
+                return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>["nomor_terakhir_display"=>$result->obr_barcode,"nomor_terakhir"=>$last]],200);
             } else {
                 return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>0],200);
             }

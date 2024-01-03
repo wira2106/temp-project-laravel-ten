@@ -5,13 +5,13 @@
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">TEMP PROJECT <sup>OMI</sup></div>
+        <div class="sidebar-brand-text mx-3">CETAK KOLI <sup></sup></div>
     </a>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
     <li class="nav-item nav-item-store">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStore"
+        <!-- <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStore"
             aria-expanded="true" aria-controls="collapseDemand">
             <i class="fas fa-fw fa-cog"></i>
             <span>Store</span>
@@ -46,7 +46,7 @@
                 <a class="collapse-item collapse-item-royalti-recap-report"
                     href="{{ url('/list-royalti-recap-report') }}">Royalti Recap Report</a>
             </div>
-        </div>
+        </div> -->
     </li>
 
     <!-- Divider -->

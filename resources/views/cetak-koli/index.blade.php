@@ -89,7 +89,7 @@
                                     <!-- ===== Tab NOMOR KOLI ====== -->
                                     <!-- =========================== -->
                                     <div class="tab-pane fade show active" id="tab1">
-                                        <div class="input-group mb-3">
+                                        <!-- <div class="input-group mb-3">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text" id="basic-addon3">Nama Sarana</span>
                                             </div>
@@ -99,7 +99,7 @@
                                                 <option value="2">Two</option>
                                                 <option value="3">Three</option>
                                             </select>
-                                        </div>
+                                        </div> -->
                                         <div class="card border border-primary mb-2">
                                             <div class="card-header">
                                                 Cetak Nomor Baru
@@ -126,6 +126,7 @@
                                                                     </label>
                                                                 </div>
                                                                 <div class="form-check">
+                                                                    <input type="hidden" class="text" value="Cetak Koli Nomor Baru?">
                                                                     <input class="form-check-input" name="idm" type="checkbox" value="" id="idm">
                                                                     <label class="form-check-label" for="idm">
                                                                        IDM
@@ -278,7 +279,7 @@
                                     <!-- === END Tab BARCODE PLU === -->
                                     <!-- =========================== -->
                                     <!-- =========================== -->
-                                    <!-- ===== Tab NOMOR KOLI ====== -->
+                                    <!-- ===== Tab BARCODE OBI ====== -->
                                     <!-- =========================== -->
                                     <div class="tab-pane fade" id="tab3">
                                         <div class="card border border-primary mb-2">
@@ -302,7 +303,8 @@
                                                                                 <div class="input-group-prepend">
                                                                                     <span class="input-group-text" id="basic-addon3">Nomor Terakhir</span>
                                                                                 </div>
-                                                                                <input type="number" class="form-control" id="nomor_terakhir" name="nomor_terakhir" readonly>
+                                                                                <input type="number" class="form-control" id="nomor_terakhir_display" name="nomor_terakhir_display" readonly>
+                                                                                <input type="hidden" class="form-control" id="nomor_terakhir" name="nomor_terakhir" readonly>
                                                                                 <input type="hidden" class="form-control" id="jarak_kiri_omi" name="jarak_kiri">
                                                                                 <input type="hidden" class="form-control" id="jarak_atas_omi" name="jarak_atas">
                                                                                 <input type="hidden" name="multipleForm"  value="3">
@@ -355,6 +357,7 @@
                                                                                     <span class="input-group-text" id="basic-addon3">S / D</span>
                                                                                 </div>
                                                                                 <input type="number" class="form-control" name="input2" id="input2" min="0" >
+                                                                                <input type="hidden" class="form-control" id="nomor_terakhir_display_reprint" name="nomor_terakhir_display" readonly>
                                                                                 <input type="hidden" class="form-control" id="jarak_kiri_omi_reprint" name="jarak_kiri">
                                                                                 <input type="hidden" class="form-control" id="jarak_atas_omi_reprint" name="jarak_atas">
                                                                                 <input type="hidden" class="form-control" id="nomor_terakhir_reprint" name="nomor_terakhir">
@@ -383,10 +386,10 @@
                                         </div>
                                     </div>
                                     <!-- =========================== -->
-                                    <!-- ==== END Tab NOMOR KOLI === -->
+                                    <!-- ==== END Tab BARCODE OBI === -->
                                     <!-- =========================== -->
                                     <!-- =========================== -->
-                                    <!-- ===== Tab NOMOR KOLI ====== -->
+                                    <!-- === Tab REPRINT CHECKER === -->
                                     <!-- =========================== -->
                                     <div class="tab-pane fade" id="tab4">
                                         <div class="card-header">
@@ -426,7 +429,7 @@
                                         </div>
                                     </div>
                                     <!-- =========================== -->
-                                    <!-- ==== END Tab NOMOR KOLI === -->
+                                    <!-- = End Tab REPRINT CHECKER = -->
                                     <!-- =========================== -->
                                 </div>
                             </div>
