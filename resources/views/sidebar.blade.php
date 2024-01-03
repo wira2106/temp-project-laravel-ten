@@ -5,7 +5,7 @@
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">TEMP PROJECT <sup>OMI</sup></div>
+        <div class="sidebar-brand-text mx-3"> MB ALASAN PB DARURAT<sup> </sup></div>
     </a>
 
     <!-- Divider -->

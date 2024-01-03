@@ -55,6 +55,7 @@
                                             <select class="selectpicker form-control" id="select-branch"
                                                 data-live-search="true" title="Select Branch">
                                                 <option value="22">22 - IGRSMG</option>
+                                                <option value="00">00 - IGRMKTHO</option>
                                             </select>
                                         </div>
                                         <div class="form-group">

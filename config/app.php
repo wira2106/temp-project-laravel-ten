@@ -172,6 +172,7 @@ return [
         Milon\Barcode\BarcodeServiceProvider::class,
 
         Barryvdh\DomPDF\ServiceProvider::class,
+        Yajra\Oci8\Oci8ServiceProvider::class,
     ])->toArray(),
 
     /*

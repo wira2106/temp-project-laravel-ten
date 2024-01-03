@@ -25,20 +25,30 @@ class DatabaseConnection
                 $serviceName = "igrsmg";
                 $username = "postgres";
                 $password = "postgres@SD1";
-            } else {
+                $driver ="pgsql";
+                $schema ="public";
+            } else if($branch === 00){
+                $ip = "172.20.22.107";
+                $port = "1521";
+                $serviceName = "devdb";
+                $username = "igrmktho";
+                $password = "igrmktho";
+                $driver ="oracle";
+                $schema ="IGRMKTHO";
+            }else{
                 return "Error! Please select server from login menu.";
             }
 
             $ConnName = "database.connections.branchConn";
             Config::set([$ConnName => [
-                'driver' => env("DB_DRIVER", "pgsql"),
+                'driver' => env("DB_DRIVER", $driver),
                 'host' =>  env("DB_HOST", $ip),
                 'port' => env("DB_PORT", $port),
                 'database' => env('DB_DATABASE', $serviceName),
                 'username' => env('DB_USERNAME', $username),
                 'password' => env('DB_PASSWORD', $password),
                 'prefix' => env("DB_PREFIX", ''),
-                'schema' => 'public',
+                'schema' => $schema,
                 'sslmode' => 'disable',
             ]]);
 

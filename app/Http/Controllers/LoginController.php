@@ -22,6 +22,7 @@ class LoginController extends Controller
                 ->where("userid", $req->username)
                 ->where("userpassword", $req->password)
                 ->get();
+                dd($data);
 
             if (count($data) > 0) {
                 session([
