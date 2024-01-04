@@ -332,14 +332,13 @@ class CetakKoliController extends Controller
                     })
                     ->orderByDesc('obr_barcode')
                     ->first();
-            
             $this->DB_PGSQL->commit();
             if ($result) {
                 $tmp = $result->obr_barcode;
                 $last = (int)substr($tmp, -5);
                 return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>["nomor_terakhir_display"=>$result->obr_barcode,"nomor_terakhir"=>$last]],200);
             } else {
-                return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>0],200);
+                return response()->json(['errors'=>false,'messages'=>'berhasil','data'=>["nomor_terakhir_display"=>0,"nomor_terakhir"=>0]],200);
             }
             
         } catch (\Throwable $th) {
@@ -441,7 +440,8 @@ class CetakKoliController extends Controller
             }
             
             $this->DB_PGSQL->commit();
-            return response()->json(['errors'=>false,'messages'=>$message],$code);
+            return response()->json(['errors'=>false,'download'=>url('/print/koli?koli='.$request->nomor_koli),'messages'=>$message],$code);
+
         } catch (\Throwable $th) {
             
             $this->DB_PGSQL->rollBack();

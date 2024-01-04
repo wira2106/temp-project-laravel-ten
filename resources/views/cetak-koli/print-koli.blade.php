@@ -3,11 +3,11 @@
 @section('table_font_size','7 px')
 
 @section('page_title')
-    @lang('barcode OBI')
+    @lang('barcode Koli')
 @endsection
 
 @section('title')
-    @lang('barcode OBI')
+    @lang('barcode Koli')
 @endsection
 
 @section('subtitle')
@@ -38,11 +38,21 @@
 
 @section('content')
 @if($data)
+@if(!is_array($data))
+<div class="list_barcode">
+    <div class="barcode_nomor_koli">
+        {!! DNS1D::getBarcodeHTML($data, 'C128') !!}
+    </div>
+    <div class="nomor_koli">
+       {{$data}}
+    </div>
+</div>
+@else
+@foreach($data as $barcode)
 @php
 $data = base64_decode($data);
 $data = json_decode($data);
 @endphp
-@foreach($data as $barcode)
 <div class="list_barcode">
     <div class="barcode_nomor_koli">
         {!! DNS1D::getBarcodeHTML($barcode, 'C128') !!}
@@ -52,6 +62,7 @@ $data = json_decode($data);
     </div>
 </div>
 @endforeach
+@endif
 @else
 <div style="text-align: center; font-size:14px;"> Data Tidak Tersedia</div>
 @endif

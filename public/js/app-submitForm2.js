@@ -58,6 +58,7 @@ $('.form_data').submit(function (e) {
                          messages,
                         'success'
                     )
+                    console.log((download !== '' && download !== null && download !== undefined ) || (response.download !== '' && response.download !== null && response.download !== undefined),response.download)
                    if((download !== '' && download !== null && download !== undefined ) || (response.download !== '' && response.download !== null && response.download !== undefined)){
                         download = response.download?response.download:download;
                         window.open(download,'_blank');
