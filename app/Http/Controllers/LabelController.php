@@ -53,6 +53,6 @@ class LabelController extends Controller
 
     public function cetak(){
         return view('template-print.print');
-        // return $this->printPDF();
+        // return $this->printPotraitPDF();
     }
 }

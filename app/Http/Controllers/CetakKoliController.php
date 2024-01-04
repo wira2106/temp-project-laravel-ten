@@ -131,7 +131,7 @@ class CetakKoliController extends Controller
     }
 
     public function print_koli(Request $request){
-        return $this->printPDF($request->koli,"cetak-koli.print-koli ","Cetak KOLI".date('Y-m-d H:i:s').'pdf');
+        return $this->printPotraitPDF($request->koli,"cetak-koli.print-koli ","Cetak KOLI".date('Y-m-d H:i:s').'pdf');
     }
 
     public function check_plu(Request $request){
@@ -168,7 +168,7 @@ class CetakKoliController extends Controller
         for ($i=1; $i <=$request->jumlah_label ; $i++) { 
             $data[] = $request->prdcd;
         }
-        return $this->printPDF($data,"cetak-koli.print-plu","reprint-checker".date('Y-m-d H:i:s').'pdf');
+        return $this->printPotraitPDF($data,"cetak-koli.print-plu","reprint-checker".date('Y-m-d H:i:s').'pdf');
     }
     
     public function cetak_obi(Request $request){
@@ -452,10 +452,10 @@ class CetakKoliController extends Controller
 
     public function print_obi(Request $request){
         $data = $this->cek_no_reprint_obi($request->input1,$request->input2);
-        return $this->printPDF($data,"cetak-koli.print-obi","print-obi ".date('Y-m-d H:i:s').'pdf');
+        return $this->printPotraitPDF($data,"cetak-koli.print-obi","print-obi ".date('Y-m-d H:i:s').'pdf');
     }
     public function print_reprint_checker(Request $request){
-        return $this->printPDF($request->nomor_koli,"cetak-koli.print-reprint-checker ","reprint-checker".date('Y-m-d H:i:s').'pdf');
+        return $this->printPotraitPDF($request->nomor_koli,"cetak-koli.print-reprint-checker ","reprint-checker".date('Y-m-d H:i:s').'pdf');
     }
 
 }
