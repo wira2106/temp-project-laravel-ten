@@ -31,7 +31,7 @@ trait LibraryPDF
         if ($download) {
             return $pdf->download($nama_pdf);
         } else {
-            return $pdf->stream($nama_pdf);
+            return $pdf->stream($nama_pdf); 
         }
         
     }
