@@ -57,6 +57,7 @@
                             <div class="card input-form by-plu">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By PLU:</label>
@@ -73,6 +74,8 @@
                                                         </select>
                                                     </div>
                                                 </div>
+
+                                                <div class="prdcd"></div>
                                             </div>
                                         </div>
                                         
@@ -97,6 +100,8 @@
                                                         <option value="no pcs">No PCS</option>
                                                     </select>
                                                 </div>
+
+                                                <div class="satuan"></div>
                                             </div>
                                         </div>
     
@@ -106,13 +111,14 @@
                                                     <label for="prdcd">Qty</label>
                                                     <input type="number" class="form-control input-data by-plu" name="qty" id="qty">
                                                 </div>
+                                                <div class="qty"></div>
                                             </div>
                                         </div>
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
                                                    <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                   <button class="btn btn-sm btn-primary" type="submit" onclick="""> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -393,6 +399,7 @@
                                         <!-- ============================ -->
                                 </div>
                             </div>
+                            
 
                 </div>
 

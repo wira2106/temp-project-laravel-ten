@@ -30,5 +30,8 @@ Route::middleware(['mylogin'])->group(function () {
     Route::get('cetak', [LabelController::class, 'cetak']);
     Route::post('get-user', [HomeController::class, 'getUser']);
     Route::post('insert-user', [HomeController::class, 'insertUser']);
+
+
+    Route::post('api/insert/byplu', [LabelController::class, 'insert_by_plu']);
     
 });
