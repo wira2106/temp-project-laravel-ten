@@ -22,7 +22,7 @@ Route::get('/', function () {
     // dd(phpinfo());
     return view('member-ho.menu.member');
 });
-Route::get('/member/data', function () {
+Route::get('/member/list', function () {
     // dd(Session::get('token'));
     return view('member-ho.menu.member');
 });
