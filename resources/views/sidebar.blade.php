@@ -10,7 +10,7 @@
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
-    <li class="nav-item nav-item-store">
+    <!-- <li class="nav-item nav-item-store">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStore"
             aria-expanded="true" aria-controls="collapseDemand">
             <i class="fas fa-fw fa-cog"></i>
@@ -47,7 +47,7 @@
                     href="{{ url('/list-royalti-recap-report') }}">Royalti Recap Report</a>
             </div>
         </div>
-    </li>
+    </li> -->
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
