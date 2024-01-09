@@ -27,7 +27,7 @@ class DatabaseConnection
                 $password = "postgres@SD1";
                 $driver ="pgsql";
                 $schema ="public";
-            } else if($branch === 00){
+            } else if($branch === "00"){
                 $ip = "172.20.22.107";
                 $port = "1521";
                 $serviceName = "devdb";
@@ -38,7 +38,6 @@ class DatabaseConnection
             }else{
                 return "Error! Please select server from login menu.";
             }
-
             $ConnName = "database.connections.branchConn";
             Config::set([$ConnName => [
                 'driver' => env("DB_DRIVER", $driver),

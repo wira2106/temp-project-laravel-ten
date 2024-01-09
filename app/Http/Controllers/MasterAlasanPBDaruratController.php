@@ -12,7 +12,7 @@ class MasterAlasanPBDaruratController extends Controller
     public $DB_ORACLE;
     public $no_db = false;
     public function __construct() {
-        $this->no_db = true;
+        // $this->no_db = true;
         if(!( $this->no_db)){
             $this->DB_ORACLE = DB::connection('oracle');
         }
@@ -30,33 +30,15 @@ class MasterAlasanPBDaruratController extends Controller
         // }
     }
 
+    public function index(){
+        view('master-alasan-pb-darurat.home');
+    }
+
     public function get_list_alasan(Request $request){
         if ($this->no_db) {
-
-        $faker = Faker::create('id_ID');
-            $result = [];
-            $page_start = 1;
-            $page_end = $request->page*10;
-    
-            if($request->page > 1){
-                $page_start = $page_end - 9;
-            }
-
-            for ($i = $page_start; $i <= $page_end; $i++) {
-                $alasan = $faker->randomElement([
-                    'MASALAH JARINGAN',
-                    'TOKO BARU',
-                    'ERROR PROGRAM KOMPUTER DI PC',
-                    'ERROR PERHITUNGAN DI PC',
-                ]);
-                
-                $result[] = (object)[
-                    "ALASAN" => $alasan." ".$i,
-                    "CREATE_DT"=>date('Y-m-d H:i:s'),
-                    "MODIFY_DT"=>date('Y-m-d H:i:s'),
-                ];
-    
-            }
+        
+        $json_data = '[{"ALASAN" : "DIPERLUKAN UBAH JADWAL MENDADAK KARENA KASUS","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-11-27"},{"ALASAN" : "TIDAK RECEIVE 90 MENIT TEST","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-10-27"},{"ALASAN" : "MASALAH JARINGAN","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-10-25"},{"ALASAN" : "SERVER PB RO DOWN\/BERMASALAH","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-10-27"},{"ALASAN" : "ERROR PERHITUNGAN DIPROGRAM KOMPUTER RO","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-10-27"},{"ALASAN" : "ERROR DIPROGRAM KOMPUTER DCI","CREATE_DT" : "2023-02-22","MODIFY_DT" : "2023-10-27"},{"ALASAN" : "TOKO BARU","CREATE_DT" : "2023-10-25","MODIFY_DT" : null},{"ALASAN" : "ALASAN FL","CREATE_DT" : "2023-11-27","MODIFY_DT" : null}]';
+        $result = json_decode($json_data);
         } else {
             $result = $this->DB_ORACLE
                            ->table("MASTER_ALASAN_PBDARURAT")
@@ -72,14 +54,15 @@ class MasterAlasanPBDaruratController extends Controller
     }
 
     public function add(Request $request){
+
+        $this->validate($request, [
+            'alasan_baru' => 'required',
+        ]);
         if ($this->no_db) {
             return response()->json(['errors'=>false,'messages'=>'berhasil'],200);
         } else {
             $this->DB_ORACLE->beginTransaction();
             try {
-                $this->validate($request, [
-                    'alasan_baru' => 'required',
-                ]);
                 $alasan_baru = strtoupper($request->alasan_baru);
                 $check_same_alasan = $this->DB_ORACLE->table("MASTER_ALASAN_PBDARURAT")->whereRaw("ALASAN = '$alasan_baru'")->first();
                 if ($check_same_alasan) {
@@ -106,15 +89,16 @@ class MasterAlasanPBDaruratController extends Controller
     }
 
     public function update(Request $request){
+            
+        $this->validate($request, [
+            'alasan_baru' => 'required',
+            'alasan_dipilih' => 'required',
+        ]);
         if ($this->no_db) {
             return response()->json(['errors'=>false,'messages'=>'berhasil'],200);
         } else {
             $this->DB_ORACLE->beginTransaction();
             try {
-    
-                $this->validate($request, [
-                    'alasan_baru' => 'required',
-                ]);
     
                 $alasan_dipilih = strtoupper($request->alasan_dipilih);
                 $alasan_baru = strtoupper($request->alasan_baru);
@@ -184,83 +168,84 @@ class MasterAlasanPBDaruratController extends Controller
     }
 
     public function kirim(Request $request){
+        if ($this->no_db) {
+            return response()->json(['errors'=>false,'messages'=>'berhasil'],200);
+        } else {
+            // Get list of reasons (assuming GetListAlasan() and GetListCabang() are implemented elsewhere)
+            $tbAlasan = $this->get_data_alasan();
+            $tbCabang = $this->get_list_cabang();
+            $alasan = [];
 
-        // Get list of reasons (assuming GetListAlasan() and GetListCabang() are implemented elsewhere)
-        $tbAlasan = $this->get_list_alasan();
-        $tbCabang = $this->get_list_cabang();
-        $alasan = [];
+            $count = 0;
+                try {
+                    foreach ($tbCabang as $roww) {
+                        $count++;
 
-        $count = 0;
+                        // Establish Oracle connection
+                        Config::set([$roww->nama_igr => [
+                            'driver' => 'oracle',
+                            'host' =>  $roww->server_name,
+                            'port' => $roww->port,
+                            'database' => $roww->service_name,
+                            'username' => $roww->username,
+                            'password' => $roww->password,
+                            'prefix' => '',
+                            'sslmode' => 'disable',
+                        ]]);
+                        $this->DB_ORACLE = DB::connection($roww->nama_igr);
+                        $this->DB_ORACLE->beginTransaction();
+                        
 
+                        // Delete records from master_alasan_pbdarurat
+                        $this->DB_ORACLE->table('master_alasan_pbdarurat')->delete();
 
-            try {
-                foreach ($tbCabang as $roww) {
-                    $count++;
+                        foreach ($tbAlasan as $roww2) {
+                            $tempDate = strtotime($roww2[1]);
+                            $strsql = "insert into master_alasan_pbdarurat values ('" . $roww2[0] . "', TO_DATE('" . date('d/m/Y', $tempDate) . "', 'DD-MM-YYYY'), ";
 
-                    // Establish Oracle connection
-                    Config::set([$roww->nama_igr => [
-                        'driver' => 'oracle',
-                        'host' =>  $roww->server_name,
-                        'port' => $roww->port,
-                        'database' => $roww->service_name,
-                        'username' => $roww->username,
-                        'password' => $roww->password,
-                        'prefix' => '',
-                        'sslmode' => 'disable',
-                    ]]);
-                    $this->DB_ORACLE = DB::connection($roww->nama_igr);
-                    $this->DB_ORACLE->beginTransaction();
-                    
+                            if (empty($roww2[2])) {
+                                $strsql .= "null)";
+                            } else {
+                                $tempDate = strtotime($roww2[2]);
+                                $strsql .= "TO_DATE('" . date('d/m/Y', $tempDate) . "', 'DD-MM-YYYY'))";
+                            }
 
-                    // Delete records from master_alasan_pbdarurat
-                    $this->DB_ORACLE->table('master_alasan_pbdarurat')->delete();
-
-                    foreach ($tbAlasan as $roww2) {
-                        $tempDate = strtotime($roww2[1]);
-                        $strsql = "insert into master_alasan_pbdarurat values ('" . $roww2[0] . "', TO_DATE('" . date('d/m/Y', $tempDate) . "', 'DD-MM-YYYY'), ";
-
-                        if (empty($roww2[2])) {
-                            $strsql .= "null)";
-                        } else {
-                            $tempDate = strtotime($roww2[2]);
-                            $strsql .= "TO_DATE('" . date('d/m/Y', $tempDate) . "', 'DD-MM-YYYY'))";
+                            $alasan [] = [
+                                "ALASAN" => $alasan_baru,
+                                "CREATE_DT"=> date('Y-m-d H:i:s'),
+                                "MODIFY_DT"=> null,
+                            ];
                         }
 
-                        $alasan [] = [
-                            "ALASAN" => $alasan_baru,
-                            "CREATE_DT"=> date('Y-m-d H:i:s'),
-                            "MODIFY_DT"=> null,
-                        ];
+                        $insert = $this->DB_ORACLE->table("MASTER_ALASAN_PBDARURAT")->insert($arr);
+
+                    
+                        $this->DB_ORACLE->commit();
+                        
+                    }        
+                    
+                    // back use default connection
+                    $this->DB_ORACLE = DB::connection('oracle');
+
+                    if ($count === count($tbCabang)) {
+                        
+                        return response()->json(['errors'=>false,'messages'=>'Data Selesai Di Proses !!'],200); 
+                    } else {
+                        
+                        return response()->json(['errors'=>true,'messages'=>"Data Gagal Diproses"],500);
                     }
+                } catch (Exception $ex) {
 
-                    $insert = $this->DB_ORACLE->table("MASTER_ALASAN_PBDARURAT")->insert($arr);
-
-                
-                    $this->DB_ORACLE->commit();
+                    $this->DB_ORACLE->rollback();
                     
-                }        
-                
-                // back use default connection
-                $this->DB_ORACLE = DB::connection('oracle');
-
-                if ($count === count($tbCabang)) {
-                    
-                    return response()->json(['errors'=>false,'messages'=>'Data Selesai Di Proses !!'],200); 
-                } else {
-                    
-                    return response()->json(['errors'=>true,'messages'=>"Data Gagal Diproses"],500);
+                    return response()->json(['errors'=>true,'messages'=>$ex->getMessage()],500);
                 }
-            } catch (Exception $ex) {
-
-                $this->DB_ORACLE->rollback();
-                
-                return response()->json(['errors'=>true,'messages'=>$ex->getMessage()],500);
-            }
+        }
 
 
     }
 
-    public function get_list_alasan(){
+    public function get_data_alasan(){
 
         // Assuming you are in a Laravel Controller or Service
 

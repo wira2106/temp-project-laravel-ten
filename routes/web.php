@@ -18,10 +18,10 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', function () {
     // dd(Session::get('token'));
-    // return redirect()->route('login');
+    return redirect()->route('login');
 
 
-    return view('master-alasan-pb-darurat.home');
+    // return view('master-alasan-pb-darurat.home');
 //     $host = '172.20.22.107';
 // $port = '1521';
 // $service_name = 'devdb';
@@ -46,15 +46,17 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::get('/logout', [LoginController::class, 'logout']);
 
 
-Route::get('/api/get_list_alasan', [MasterAlasanPBDaruratController::class, 'get_list_alasan']);
-Route::post('/api/add', [MasterAlasanPBDaruratController::class, 'add']);
-Route::post('/api/update', [MasterAlasanPBDaruratController::class, 'update']);
-Route::post('/api/delete', [MasterAlasanPBDaruratController::class, 'delete']);
 
 Route::middleware(['mylogin'])->group(function () {
-    //HOME
-    Route::get('home', [LabelController::class, 'index']);
-    Route::get('cetak', [LabelController::class, 'cetak']);
+    //api 
+    Route::get('/api/get_list_alasan', [MasterAlasanPBDaruratController::class, 'get_list_alasan']);
+    Route::post('/api/add', [MasterAlasanPBDaruratController::class, 'add']);
+    Route::post('/api/update', [MasterAlasanPBDaruratController::class, 'update']);
+    Route::post('/api/delete', [MasterAlasanPBDaruratController::class, 'delete']);
+    Route::post('/api/kirim', [MasterAlasanPBDaruratController::class, 'kirim']);
+     //HOME
+    Route::get('home', [MasterAlasanPBDaruratController::class, 'index']);
+    // Route::get('cetak', [LabelController::class, 'cetak']);
     Route::post('get-user', [HomeController::class, 'getUser']);
     Route::post('insert-user', [HomeController::class, 'insertUser']);
     

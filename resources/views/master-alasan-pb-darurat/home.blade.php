@@ -65,7 +65,7 @@
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="alasan_baru" name="alasan_baru">
                             <input type="hidden" class="form-control" id="runNext" name="runNext" onchange="get_list_alasan(true)">
-                            <small id="error_alasan_baru" class="form-text text-muted alasan_baru">We'll never share your email with anyone else.</small>
+                            <small id="error_alasan_baru-not-use" class="form-text text-muted alasan_baru"></small>
                         </div>
   
                     </div>

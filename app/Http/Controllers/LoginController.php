@@ -16,13 +16,13 @@ class LoginController extends Controller
     public function login(Request $req)
     {
         try {
+
             $mytime = date('Ymd H:i:s');
             DatabaseConnection::setConnection($req->branch, "PRODUCTION");
             $data = DB::table("tbmaster_user")
                 ->where("userid", $req->username)
                 ->where("userpassword", $req->password)
                 ->get();
-                dd($data);
 
             if (count($data) > 0) {
                 session([
