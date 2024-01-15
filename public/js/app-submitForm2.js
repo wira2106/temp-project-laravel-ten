@@ -50,8 +50,14 @@ $('.form_data').submit(function (e) {
                 data: new FormData(this),
     
                 success: function (response) {
-
-                    // console.log(response.download,response.redirect,runNext,multipleForm)
+                    /**
+                     * response property
+                     * 
+                     * messages => for the custom message 
+                     * download => for redirect link download
+                     * redirect => for redirect to another page
+                     * callback => for execute respose data callback
+                     */
                     let messages = response.messages?response.messages:'Data Berhasil Diproses';
                     Swal.fire(
                         'Berhasil',
@@ -66,8 +72,17 @@ $('.form_data').submit(function (e) {
                        redirect = response.redirect?response.redirect:redirect;
                        window.location.href = redirect
                    } 
+                   console.log(response,response.callback !== '' && response.callback !== null && response.callback !== undefined);
                    if(runNext !== '' && runNext !== null && runNext !== undefined){
-                        runNext.call()
+                        
+                        if (response.callback !== '' && response.callback !== null && response.callback !== undefined) {
+                            $('#runNext'+multipleForm).val(JSON.stringify(response.callback))
+                            
+                            next_callback_function = (document.getElementById('runNext'+multipleForm));
+                            next_callback_function.dispatchEvent(new Event('change')).parameter = response.callback;
+                        } else {
+                            runNext.call()
+                        }
                    } 
                 },
                 error: function (xhr) {
