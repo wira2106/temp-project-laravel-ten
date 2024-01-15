@@ -117,8 +117,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="1">
                                                    <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
-                                                   <button class="btn btn-sm btn-primary" type="submit" onclick="""> Insert Ke Database</button>
+                                                   <input type="hidden" class="form-control" id="runNext1" onchange="getDataLabel(`prdcd=${$('#prdcd').val()}`)">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitByPLU(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -141,8 +143,19 @@
                                                 <div class="form-group">
                                                     <label for="rak">Rak</label>
                                                     <div class="form-group">
-                                                        <select class="form-control select2 input-data by-rak" name="rak" id="rak">
+                                                        <select class="form-control select2 input-data by-rak" name="rak" id="rak" onchange="changeRak(this)">
                                                             <option value="" disabled selected>Pilih Rak</option>
+                                                                <option class="option-rak" value="O01">O01</option>
+                                                                <option class="option-rak" value="O02">O02</option>
+                                                                <option class="option-rak" value="O03">O03</option>
+                                                                <option class="option-rak" value="O04">O04</option>
+                                                                <option class="option-rak" value="O05">O05</option>
+                                                                <option class="option-rak" value="O06">O06</option>
+                                                                <option class="option-rak" value="O07">O07</option>
+                                                                <option class="option-rak" value="O08">O08</option>
+                                                                <option class="option-rak" value="R06A">R06A</option>
+                                                                <option class="option-rak" value="R65">R65</option>
+                                                                <option class="option-rak" value="RSR">RSR</option>
                                                         
                                                         </select>
                                                     </div>
@@ -155,7 +168,7 @@
                                                 <div class="form-group">
                                                     <label for="sub-rak">Sub Rak</label>
                                                     <div class="form-group">
-                                                        <select class="form-control select2 input-data by-rak" name="sub_rak" id="sub-rak">
+                                                        <select class="form-control select2 input-data by-rak" name="sub_rak" id="sub-rak" onchange="changeSubRak(this)">
                                                             <option value="" disabled selected>Pilih Sub Rak</option>
                                                         
                                                         </select>
@@ -169,7 +182,7 @@
                                                 <div class="form-group">
                                                     <label for="tipe">Tipe</label>
                                                     <div class="form-group">
-                                                        <select class="form-control select2 input-data by-rak" name="tipe" id="tipe">
+                                                        <select class="form-control select2 input-data by-rak" name="tipe" id="tipe" onchange="changeTipeRak(this)">
                                                             <option value="" disabled selected>Pilih Tipe</option>
                                                         
                                                         </select>
@@ -183,9 +196,11 @@
                                                 <label for="Selving">Selving:</label>
                                                 <select class="form-control" id="select1" onchange="updateSelect2Options()" name="selving1" id="Selving">
                                                     <option value="" selected disabled> Pilih Selving</option>
-                                                    <option value="1"> 1</option>
-                                                    <option value="2"> 2</option>
-                                                    <option value="3"> 3</option>
+                                                    <option  class="option-sheving" value="1"> 1</option>
+                                                    <option  class="option-sheving" value="2"> 2</option>
+                                                    <option  class="option-sheving" value="3"> 3</option>
+                                                    <option  class="option-sheving" value="4"> 4</option>
+                                                    <option  class="option-sheving" value="5"> 5</option>
                                                 </select>
                                             </div>
 
@@ -200,7 +215,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="2">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <input type="hidden" class="form-control" id="runNext2" onchange="getDataLabel(`prdcd=${$('#prdcd').val()}`)">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitByRak(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -356,36 +374,36 @@
                                             <table class="table table-bordered" id="table_cabang">
                                             <thead>
                                                 <tr>
-                                                <th style="min-width: 100px;" scope="col">lpadd</th>
-                                                <th style="min-width: 100px;" scope="col">prdcd</th>
-                                                <th style="min-width: 100px;" scope="col">kplu</th>
-                                                <th style="min-width: 100px;" scope="col">Nama 1</th>
-                                                <th style="min-width: 100px;" scope="col">Nama 2</th>
-                                                <th style="min-width: 100px;" scope="col">Barc</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 1</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 2</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 3</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 1</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 2</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 3</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 1</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 2</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 3</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 1</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 2</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 3</th>
-                                                <th style="min-width: 100px;" scope="col">Fmbsts</th>
-                                                <th style="min-width: 100px;" scope="col">Flag</th>
-                                                <th style="min-width: 100px;" scope="col">Lokasi</th>
-                                                <th style="min-width: 100px;" scope="col">Fmkdsb</th>
-                                                <th style="min-width: 150px;" scope="col">Status ppn</th>
-                                                <th style="min-width: 100px;" scope="col">Tempo 1</th>
-                                                <th style="min-width: 100px;" scope="col">Tempo 2</th>
-                                                <th style="min-width: 100px;" scope="col">Tgl Insert</th>
-                                                <th style="min-width: 100px;" scope="col">Irec</th>
-                                                <th style="min-width: 100px;" scope="col">Div</th>
-                                                <th style="min-width: 100px;" scope="col">Dept</th>
-                                                <th style="min-width: 100px;" scope="col">Katb</th>
+                                                    <th style="min-width: 100px;" scope="col">lpadd</th>
+                                                    <th style="min-width: 100px;" scope="col">prdcd</th>
+                                                    <th style="min-width: 100px;" scope="col">kplu</th>
+                                                    <th style="min-width: 100px;" scope="col">Nama 1</th>
+                                                    <th style="min-width: 100px;" scope="col">Nama 2</th>
+                                                    <th style="min-width: 100px;" scope="col">Barc</th>
+                                                    <th style="min-width: 100px;" scope="col">Jml 1</th>
+                                                    <th style="min-width: 100px;" scope="col">Jml 2</th>
+                                                    <th style="min-width: 100px;" scope="col">Jml 3</th>
+                                                    <th style="min-width: 100px;" scope="col">Unit 1</th>
+                                                    <th style="min-width: 100px;" scope="col">Unit 2</th>
+                                                    <th style="min-width: 100px;" scope="col">Unit 3</th>
+                                                    <th style="min-width: 150px;" scope="col">Price All 1</th>
+                                                    <th style="min-width: 150px;" scope="col">Price All 2</th>
+                                                    <th style="min-width: 150px;" scope="col">Price All 3</th>
+                                                    <th style="min-width: 150px;" scope="col">Price Unit 1</th>
+                                                    <th style="min-width: 150px;" scope="col">Price Unit 2</th>
+                                                    <th style="min-width: 150px;" scope="col">Price Unit 3</th>
+                                                    <th style="min-width: 100px;" scope="col">Fmbsts</th>
+                                                    <th style="min-width: 100px;" scope="col">Flag</th>
+                                                    <th style="min-width: 100px;" scope="col">Lokasi</th>
+                                                    <th style="min-width: 100px;" scope="col">Fmkdsb</th>
+                                                    <th style="min-width: 150px;" scope="col">Status ppn</th>
+                                                    <th style="min-width: 100px;" scope="col">Tempo 1</th>
+                                                    <th style="min-width: 100px;" scope="col">Tempo 2</th>
+                                                    <th style="min-width: 100px;" scope="col">Tgl Insert</th>
+                                                    <th style="min-width: 100px;" scope="col">LRec</th>
+                                                    <th style="min-width: 100px;" scope="col">Div</th>
+                                                    <th style="min-width: 100px;" scope="col">Dept</th>
+                                                    <th style="min-width: 100px;" scope="col">Katb</th>
                                                 <!-- Add more headers as needed -->
                                                 </tr>
                                             </thead>
@@ -397,6 +415,17 @@
                                         <!-- ============================ -->
                                         <!--         End Table            -->
                                         <!-- ============================ -->
+                                </div>
+                                <div class="card-footer">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group d-flex justify-content-center">
+                                                <button class="btn btn-sm btn-primary" id="button_view_hasil" onclick="temp_function_viewHasil()" type="button" disabled> View Hasil</button>
+                                                &nbsp;
+                                                <button class="btn btn-sm btn-danger" id="button_delete_all" onclick="temp_function_deleteAll()" type="button" disabled> Delete All</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             

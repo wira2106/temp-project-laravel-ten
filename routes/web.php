@@ -31,7 +31,13 @@ Route::middleware(['mylogin'])->group(function () {
     Route::post('get-user', [HomeController::class, 'getUser']);
     Route::post('insert-user', [HomeController::class, 'insertUser']);
 
+    Route::get('api/label/data/produk', [LabelController::class, 'data_master']);
+    Route::get('api/label/data/label', [LabelController::class, 'data_master_label']);
+    Route::get('api/label/data/sub_rak', [LabelController::class, 'data_subrak']);
+    Route::get('api/label/data/tipe_rak', [LabelController::class, 'data_tiperak']);
+    Route::get('api/label/data/shelving_rak', [LabelController::class, 'data_shelvingrak']);
+    Route::post('api/label/delete', [LabelController::class, 'cek_delete_data_label']);
 
-    Route::post('api/insert/byplu', [LabelController::class, 'insert_by_plu']);
+    Route::post('api/insert/byplu', [LabelController::class, 'insert_to_database']);
     
 });
