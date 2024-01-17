@@ -8,6 +8,7 @@ use App\Transformers\DataMasterProdukTransformers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use DB;
+use Hamcrest\Arrays\IsArray;
 use Svg\Tag\Rect;
 
 class LabelController extends Controller
@@ -73,6 +74,47 @@ class LabelController extends Controller
 
     }
     
+    public function data_div(Request $request){
+
+
+        $results = $this->DB_PGSQL
+                        ->table("tbmaster_divisi")
+                        ->selectRaw("
+                            div_kodedivisi, div_namadivisi
+                        ")
+                        ->whereRaw("coalesce(div_kodedivisi, ' ') <> ' ' and coalesce(div_namadivisi, ' ') <> ' '")
+                        ->get();
+        return $results ;
+
+    }
+    public function data_dept(Request $request){
+
+
+        $results = $this->DB_PGSQL
+                        ->table("tbmaster_departement")
+                        ->selectRaw("
+                            dep_kodedepartement, dep_namadepartement
+                        ")
+                        ->whereRaw("dep_kodedivisi = '$request->div'")
+                        ->get();
+        return $results ;
+
+    }
+
+    public function data_katb(Request $request){
+
+
+        $results = $this->DB_PGSQL
+                        ->table("tbmaster_kategori")
+                        ->selectRaw("
+                            kat_kodedepartement, kat_kodekategori, kat_namakategori
+                        ")
+                        ->whereRaw("kat_kodedepartement = '$request->dept'")
+                        ->get();
+        return $results ;
+
+    }
+
     public function data_subrak(Request $request){
 
 
@@ -146,12 +188,30 @@ class LabelController extends Controller
         return $data_master_produk;
     }
     public function master_label(Request $request){
+        
         $data_master_label = $this->DB_PGSQL->table('tblabel_detail_master')
-                            ->whereRaw("ipadd = '$this->ip_address'")
-                            ->whereRaw("prdcd like '%$request->prdcd%'")
-                            ->orderBy('tglinsert','desc')
+                            ->whereRaw("ipadd = '$this->ip_address'");
+                            if (is_array(json_decode($request->pcrd))){
+                                $prdcd = json_decode($request->pcrd);
+                                $length_array = count($prdcd) -1;
+                                $in_prdcd = "(";
+                                $test =[];
+                                foreach ($prdcd as $key => $value) {
+                                    // $length_array !== $key? : $in_prdcd."'$value')";
+                                    if ($length_array !== $key) {
+                                        $in_prdcd = $in_prdcd."'$value',";
+                                    } else {
+                                        $in_prdcd = $in_prdcd."'$value')";
+                                    }
+                                    
+                                }
+                                $data_master_label = $data_master_label->whereRaw("prdcd in $in_prdcd");
+                            } else {
+                                $data_master_label = $data_master_label->whereRaw("prdcd like '%$request->prdcd%'");
+                            }
+                            
+        $data_master_label = $data_master_label->orderBy('tglinsert','desc')
                             ->get();
-
 
         return $data_master_label;
     }
@@ -219,6 +279,13 @@ class LabelController extends Controller
             'selving2' => 'required',
         ]);
 
+        $rak = $request->rak;
+        $sub_rak = $request->sub_rak;
+        $tipe = $request->tipe;
+        $selving1 = (int)$request->selving1 >9?$request->selving1:"0".$request->selving1;
+        $selving2 = (int)$request->selving2 >9?$request->selving2:"0".$request->selving2;
+        $temp_prdcd = [];
+        
         try {
             $this->DB_PGSQL->beginTransaction();
             
@@ -231,19 +298,19 @@ class LabelController extends Controller
                             ->leftJoin("tbmaster_prodmast",function($join){
                                 $join->on("lks_prdcd" ,"=" ,"prd_prdcd");
                             })
-                            ->whereRaw("LKS_KODERAK = '$request->rak'")
-                            ->whereRaw("LKS_KodeSubRak = '$request->sub_rak'")
-                            ->whereRaw("LKS_TipeRak = '$request->tipe'")
-                            ->whereRaw("LKS_ShelvingRak BETWEEN '$request->selving1' AND '$request->selving2' ")
+                            ->whereRaw("LKS_KODERAK = '$rak'")
+                            ->whereRaw("LKS_KodeSubRak = '$sub_rak'")
+                            ->whereRaw("LKS_TipeRak = '$tipe'")
+                            ->whereRaw("LKS_ShelvingRak BETWEEN '$selving1' AND '$selving2' ")
                             ->whereRaw("LKS_KodeRak NOT LIKE 'H%'")
                             ->whereRaw("(LKS_KodeRak LIKE 'R%' OR LKS_KodeRak LIKE 'O%')")
                             ->whereRaw("(SUBSTRING(LKS_TipeRak, 1, 1) IN ('B', 'I', 'N') OR LKS_JenisRak IN ('D', 'N'))")
                             ->get();
-            
             // Process the results
             if (count($results) > 0) {
                 $this->dtKeluar = "";
                 foreach ($results as $j => $row) {
+                    $temp_prdcd[] = $row->lks_prdcd;
 
                     $this->proses_prdcd($row->lks_prdcd, $row->prd_deskripsipanjang, 1, "Manual");
                 }
@@ -258,14 +325,80 @@ class LabelController extends Controller
                 
                 $this->DB_PGSQL->commit();
                 if (count($dtabOra2)) {
-                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','list_data' => $dtabOra2],200);
+                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
                 } else {
-                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan','list_data' => $dtabOra2],404);
+                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
                 }
                 
             }
             
             $this->DB_PGSQL->commit();
+
+            return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+        } catch (\Throwable $th) {
+            
+            $this->DB_PGSQL->rollBack();
+            // dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
+        
+    }
+    public function insert_to_database_by_div(Request $request){
+        $this->validate($request, [
+            'div' => 'required',
+            'dept' => 'required',
+            'katb' => 'required',
+        ]);
+
+        $div = $request->div;
+        $dept = $request->dept;
+        $katb = $request->katb;
+        $temp_prdcd = [];
+        
+        try {
+            $this->DB_PGSQL->beginTransaction();
+            
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast")
+                            ->selectRaw("
+                                SUBSTR(PRD_PRDCD, 1, 6) as prd_prdcd, prd_deskripsipanjang
+                            ")
+                            ->distinct()
+                            ->whereRaw("PRD_KodeDivisi = '$div'") 
+                            ->whereRaw("PRD_KodeDepartement = '$dept'") 
+                            ->whereRaw("PRD_KodeKategoriBarang = '$katb'") 
+                            ->whereRaw("COALESCE(PRD_HrgJual, 0) <> 0") 
+                            ->get();
+                            
+            // Process the results
+            if (count($results) > 0) {
+                $this->dtKeluar = "";
+                foreach ($results as $j => $row) {
+                    $temp_prdcd[] = $row->prd_prdcd;
+
+                    $this->proses_prdcd($row->prd_prdcd, $row->prd_deskripsipanjang, 1, "Manual");
+                }
+
+                // Select records from tbLabel_Detail_Master
+                $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
+                                ->whereRaw("ipadd = '$this->ip_address'")
+                                ->orderBy('tglinsert')
+                                ->get();
+                
+    
+                
+                $this->DB_PGSQL->commit();
+                if (count($dtabOra2)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
+                } else {
+                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+                }
+                
+            }
+            
+            $this->DB_PGSQL->commit();
+
+            return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
         } catch (\Throwable $th) {
             
             $this->DB_PGSQL->rollBack();
@@ -275,6 +408,585 @@ class LabelController extends Controller
         
     }
 
+    public function insert_to_database_by_tanggal(Request $request){
+        $this->validate($request, [
+            'tanggal_aktif' => 'required',
+        ]);
+
+        $temp_prdcd = [];
+        
+        try {
+            $this->DB_PGSQL->beginTransaction();
+            
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast")
+                            ->selectRaw("
+                                SUBSTR(PRD_PRDCD, 1, 6) as prd_prdcd, prd_deskripsipanjang
+                            ")
+                            ->distinct()
+                            ->whereRaw("prd_tglhrgjual::date = '" .date('Y-m-d',strtotime($request->tanggal_aktif)). "'::date  ") 
+                            ->whereRaw("COALESCE(PRD_RECORDID,' ') <> '1'") 
+                            ->whereRaw("COALESCE(PRD_HrgJual,0) <> 0 ") 
+                            ->get();
+                            
+            // Process the results
+            if (count($results) > 0) {
+                $this->dtKeluar = "";
+                foreach ($results as $j => $row) {
+                    $temp_prdcd[] = $row->prd_prdcd;
+
+                    $this->proses_prdcd($row->prd_prdcd, $row->prd_deskripsipanjang, 1, "Manual");
+                }
+
+                // Select records from tbLabel_Detail_Master
+                $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
+                                ->whereRaw("ipadd = '$this->ip_address'")
+                                ->orderBy('tglinsert')
+                                ->get();
+                
+    
+                
+                $this->DB_PGSQL->commit();
+                if (count($dtabOra2)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
+                } else {
+                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+                }
+                
+            }
+            
+            $this->DB_PGSQL->commit();
+
+            return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+        } catch (\Throwable $th) {
+            
+            $this->DB_PGSQL->rollBack();
+            // dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
+        
+    }
+    
+    public function insert_to_database_by_setting(Request $request){
+
+        $temp_prdcd = [];
+        
+        try {
+            $this->DB_PGSQL->beginTransaction();
+
+           $exists =  $this->DB_PGSQL
+                        ->table("tbmaster_prodmast_history as h")
+                        ->selectRaw("
+                            h.prd_prdcd 
+                        ")
+                        ->whereRaw("h.backup_dt = (SELECT MAX(backup_dt) FROM tbmaster_prodmast_history)")
+                        ->whereRaw("h.prd_kodeigr = p.prd_kodeigr")
+                        ->whereRaw("h.prd_prdcd = p.prd_prdcd")
+                        ->whereRaw("COALESCE(h.prd_flag_aktivasi, '?') <> COALESCE(p.prd_flag_aktivasi, '?')")
+                        ->toSql();
+            $union = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast as p")
+                            ->selectRaw("
+                                SUBSTR(PRD_PRDCD,1,6) prdcd, PRD_DeskripsiPanjang 
+                            ")
+                            ->distinct()
+                            ->whereRaw("EXISTS ($exists) ")
+                            ->whereRaw("COALESCE(PRD_RECORDID,'0') <> '1' ")
+                            ->whereRaw("COALESCE(PRD_HrgJual,0) <> 0 ");
+            $results = $this->DB_PGSQL
+                            ->table("tbtemp_setting_pagi_hari")
+                            ->leftJoin("tbmaster_prodmast",function($join){
+                                $join->on("prd_prdcd" ,"=" ,"prdcd");
+                            })
+                            ->selectRaw("
+                                SUBSTR(PRDCD,1,6) prdcd, PRD_DeskripsiPanjang 
+                            ")
+                            ->distinct()
+                            ->whereRaw("COALESCE(PRD_RECORDID,'0') <> '1'")
+                            ->whereRaw("COALESCE(PRD_HrgJual,0) <> 0")
+                            ->union($union)
+                            ->orderBy($this->DB_PGSQL->raw("1"))
+                            ->get();
+                            
+            // Process the results
+            if (count($results) > 0) {
+                $this->dtKeluar = "";
+                foreach ($results as $j => $row) {
+                    $temp_prdcd[] = $row->prd_prdcd;
+
+                    $this->proses_prdcd2($row->prd_prdcd, $row->prd_deskripsipanjang, 1, "Manual");
+                }
+
+                // Select records from tbLabel_Detail_Master
+                $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
+                                ->whereRaw("ipadd = '$this->ip_address'")
+                                ->orderBy('tglinsert')
+                                ->get();
+                
+    
+                
+                $this->DB_PGSQL->commit();
+                if (count($dtabOra2)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
+                } else {
+                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+                }
+                
+            }
+            
+            $this->DB_PGSQL->commit();
+
+            return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+        } catch (\Throwable $th) {
+            
+            $this->DB_PGSQL->rollBack();
+            // dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
+        
+    }
+
+    public function insert_to_database_by_flag(Request $request){
+
+        $temp_prdcd = [];
+        
+        try {
+            $this->DB_PGSQL->beginTransaction();
+
+           $exists =  $this->DB_PGSQL
+                        ->table("tbmaster_prodmast_history as h")
+                        ->selectRaw("
+                            h.prd_prdcd 
+                        ")
+                        ->whereRaw("h.backup_dt = (SELECT MAX(backup_dt) FROM tbmaster_prodmast_history)")
+                        ->whereRaw("h.prd_kodeigr = p.prd_kodeigr")
+                        ->whereRaw("h.prd_prdcd = p.prd_prdcd")
+                        ->whereRaw("COALESCE(h.prd_flag_aktivasi, '?') <> COALESCE(p.prd_flag_aktivasi, '?')")
+                        ->toSql();
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast as p")
+                            ->selectRaw("
+                                SUBSTR(PRD_PRDCD,1,6), PRD_DeskripsiPanjang
+                            ")
+                            ->distinct()
+                            ->whereRaw("EXISTS ($exists) ")
+                            ->whereRaw("COALESCE(PRD_RECORDID,'0') <> '1' ")
+                            ->whereRaw("COALESCE(PRD_HrgJual,0) <> 0 ")
+                            ->get();
+                            
+            // Process the results
+            if (count($results) > 0) {
+                $this->dtKeluar = "";
+                foreach ($results as $j => $row) {
+                    $temp_prdcd[] = $row->prd_prdcd;
+
+                    $this->proses_prdcd2($row->prd_prdcd, $row->prd_deskripsipanjang, 1, "Manual");
+                }
+
+                // Select records from tbLabel_Detail_Master
+                $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
+                                ->whereRaw("ipadd = '$this->ip_address'")
+                                ->orderBy('tglinsert')
+                                ->get();
+                
+    
+                
+                $this->DB_PGSQL->commit();
+                if (count($dtabOra2)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
+                } else {
+                    return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+                }
+                
+            }
+            
+            $this->DB_PGSQL->commit();
+
+            return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
+        } catch (\Throwable $th) {
+            
+            $this->DB_PGSQL->rollBack();
+            // dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
+        
+    }
+
+    public function proses_prdcd2($prdcd=null,$desc = null, $jmlPrint = null, $tipe= null, $satuan = ["all"]){
+        
+        try {
+            $this->DB_PGSQL->beginTransaction();
+
+
+            $this->price_promo = [];
+            $this->price_a = [];
+            $this->price_all = [];
+            $this->price_unit = [];
+            $this->unit = [];
+            $this->jmlL = [];
+            $this->barc = [];
+            for ($f = 0; $f < 4; $f++) {
+                $this->price_promo[$f] = 0;
+            }
+
+            $this->flag = "";
+            for ($i = 0; $i < 5; $i++) {
+                $this->price_a[$i] = 0;
+                $this->price_all[$i] = 0;
+                $this->price_unit[$i] = 0;
+                $this->unit[$i] = "";
+                $this->jmlL[$i] = "";
+                $this->barc[$i] = "";
+            }
+
+            $klik = false;
+            $this->flag = "";
+
+
+            // First Query
+
+            $fmkrak = 0;
+            $fmsrak = 0;
+            $fmtipe = 0;
+            $fmselv = 0;
+            $fmnour = 0;
+            $fmface = 0;
+            $fmtrdb = 0;
+            $fmtrab = 0;
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_lokasi")
+                            ->selectRaw("
+                                lks_koderak as fmkrak,
+                                lks_kodesubrak as fmsrak,
+                                lks_tiperak as fmtipe,
+                                lks_shelvingrak as fmselv,
+                                lpad(lks_nourut::text, 2, '0') as fmnour,
+                                lks_tirkirikanan as fmface,
+                                lks_tirdepanbelakang as fmtrdb,
+                                lks_tiratasbawah as fmtrab
+                            ")
+                            ->whereRaw("SUBSTR(LKS_PRDCD, 1, 6) = SUBSTR('$prdcd',1,6)")
+                            ->whereRaw("SUBSTR(COALESCE(lks_koderak, '?'), 1, 1) NOT IN ('D', 'A', 'G')")
+                            ->whereRaw("LKS_KodeRak NOT LIKE 'H%'")
+                            ->whereRaw("(LKS_KodeRak LIKE 'R%' OR LKS_KodeRak LIKE 'O%')")
+                            ->whereRaw("(SUBSTR(LKS_TipeRak, 1, 1) IN ('B', 'I', 'N') OR LKS_JenisRak IN ('D', 'N'))")
+                            ->get();
+            
+            $this->dtabOra = $results;
+            if (count($results) > 0) {
+                foreach ($results as $key => $row) {
+                    $fmkrak = $row->fmkrak ?? 0;
+                    $fmsrak = $row->fmsrak ?? 0;
+                    $fmtipe = $row->fmtipe ?? 0;
+                    $fmselv = $row->fmselv ?? 0;
+                    $fmnour = $row->fmnour ?? 0;
+                    $fmface = $row->fmface ?? 0;
+                    $fmtrdb = $row->fmtrdb ?? 0;
+                    $fmtrab = $row->fmtrab ?? 0;
+                }
+            } 
+
+            // Second Query
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast")
+                            ->leftJoin("tbmaster_prodcrm",function($join){
+                                $join->on("prd_prdcd" ,"=" ,"prc_pluigr");
+                            })
+                            ->selectRaw("
+                                PRD_PRDCD AS PRDCD,
+                                COALESCE(PRD_KodeTag, ' ') AS PTAG,
+                                COALESCE(PRD_Flag_Aktivasi, ' ') AS AKTIF,
+                                CASE
+                                    WHEN TRIM(PRC_PLUIGR) IS NOT NULL THEN
+                                        CASE
+                                            WHEN TRIM(PRC_PLUIDM) IS NOT NULL THEN 'O/I'
+                                            ELSE 'O'
+                                        END
+                                    ELSE
+                                        CASE
+                                            WHEN TRIM(PRC_PLUIDM) IS NOT NULL THEN 'I'
+                                            ELSE ''
+                                        END
+                                END AS typeplu
+                            ")
+                            ->whereRaw(" PRD_PRDCD LIKE '" .substr($prdcd, 0, 6)."%'")
+                            ->whereRaw(" COALESCE(prd_kodetag, '?') NOT IN ('N', 'Q', 'U', 'Z', 'X')")
+                            ->get();
+            
+            $this->dtabOra = $results;
+            if (count($results) > 0) {
+                $desc .= " " . $results[0]->typeplu;
+            }
+
+            // Third Query
+            $left_join = "
+                        SELECT
+                            brc_prdcd,
+                            MAX(brc_barcode) as barc,
+                            NULL as bar2
+                        FROM tbMaster_Barcode
+                        GROUP BY brc_prdcd
+                        HAVING COUNT(brc_prdcd) = 1
+
+                        UNION
+
+                        SELECT
+                            brc_prdcd,
+                            MIN(brc_barcode) as barc,
+                            MAX(brc_barcode) as bar2
+                        FROM tbMaster_Barcode
+                        GROUP BY brc_prdcd
+                        HAVING COUNT(brc_prdcd) = 2
+                    ";
+
+            $fmkdsb = "";
+            $div = "";
+            $dept = "";
+            $katb = "";
+            $results = $this->DB_PGSQL
+                            ->table("tbmaster_prodmast")
+                            ->leftJoin("tbmaster_hargabeli",function($join){
+                                $join->on("hgb_prdcd" ,"=" ,"prd_prdcd");
+                            })
+                            ->leftJoin($this->DB_PGSQL->raw("($left_join) as brc"),function($join){
+                                $join->on("brc_prdcd" ,"=" ,"prd_prdcd");
+                            })
+                            ->selectRaw("
+                                prd_prdcd as prdcd,
+                                prd_plumcg as kplu,
+                                brc.barc,
+                                brc.bar2,
+                                prd_deskripsipanjang as desc2,
+                                prd_minjual as minj,
+                                prd_frac as frac,
+                                prd_unit as unit,
+                                coalesce(prd_kodetag, ' ') as ptag,
+                                coalesce(prd_flag_aktivasi, ' ') as aktif,
+                                prd_flagbarcode1 as fmbsts,
+                                prd_kategoritoko as kttk,
+                                prd_kodecabang as kcab,
+                                prd_hrgjual as price_a,
+                                prd_flagbkp1 as pkp,
+                                prd_flagbkp2 as pkp2,
+                                prd_kodedivisi as div,
+                                prd_kodedepartement as dept,
+                                prd_kodekategoribarang as katb,
+                                hgb_statusbarang as fmkdsb
+                            ")
+                            ->distinct()
+                            ->whereRaw("SUBSTR(PRD_PRDCD, 1, 6) = SUBSTR('$prdcd', 1, 6)");
+            
+            $temp = null;
+            foreach ($satuan as $key => $checkedItems) {
+                if ($checkedItems == "all") {
+                    $results = $results->whereRaw("COALESCE(prd_flag_aktivasi, '?') NOT IN ('C', 'X')"); 
+                }elseif ((int)$checkedItems > 0 ) {
+                    if ((count($satuan)-1) == $key ) {
+                        $temp = $temp."'$checkedItems'";
+                    } else {
+                        $temp = $temp."'$checkedItems',";
+                    }
+                } 
+            }
+            if ($temp) {
+                $results = $results->whereRaw("SUBSTR(prd_prdcd, -1, 1) IN ($temp)"); 
+            }
+            $results = $results->get();
+            $this->dtabOra = $results;
+            // try {
+                // foreach ($results as $key => $result_data) {
+                    $fmkdsb = $results[0]->fmkdsb ?? "";
+                    $div = $results[0]->div ?? "";
+                    $dept = $results[0]->dept ?? "";
+                    $katb = $results[0]->katb ?? "";
+                // }
+                
+            // } catch (Exception $ex) {
+            //     // Handle the exception
+            // }
+            
+
+            $jmlhs = 0;
+            $prodID = "";
+            $kplu = "";
+            $pkp = "";
+            $barcode = "";
+            $fmbsts = null;
+
+            if (count($results) !== 0) {
+                $this->DB_PGSQL->table('tblabel')->insert([
+                    "ipadd" => (string)$this->ip_address,
+                    "prdcd" => (string)substr(trim($prdcd), 0, 6),
+                    "nama" => str_replace("'", "''", trim($desc))
+
+                ]);
+            
+                $count = count($results);
+
+                // convert to array data
+                $temp = [];
+                foreach ($this->dtabOra as $key => $value) {
+                    $temp[] = (array) $value;
+                }
+                $this->dtabOra = $temp;
+                // end convert to array data
+                
+                foreach ($results as $i => $row) {
+                    $row = (array)$row;
+                    if (substr($row['prdcd'], -1) == '0') {
+                        if ($row['ptag'] !== 'Z' && $row['ptag'] !== 'X' && $row['ptag'] !== 'C' && $row['ptag'] !== 'Q') {
+                            if ($row['kttk'] === '' && $row['kcab'] === '') {
+                                break;
+                            } else {
+                                $this->cek_price($i, $jmlhs);
+                                $kplu = $row['kplu'];
+                                $fmbsts = $row['fmbsts'];
+                                $this->barc[$jmlhs] = trim($row['barc'] . ' ' . $row['bar2']);
+                                if ($this->barc[$jmlhs] !== '') {
+                                    if (is_numeric(str_replace(' ', '', $this->barc[$jmlhs]))) {
+                                        $barcode = $this->barc[$jmlhs];
+                                    }
+                                }
+                                $this->unit[$jmlhs] = $row['unit'];
+                                if ($pkp === '') $pkp = $row['pkp'] . $row['pkp2'];
+                                $prodID = (string)substr(trim($prdcd), 0, 7);
+                                $jmlhs++;
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                // convert to object data
+                $temp = [];
+                foreach ($this->dtabOra as $key => $value) {
+                    $temp[] = (object) $value;
+                }
+                $this->dtabOra = $temp;
+                // end convert to object data
+                  
+            
+                // Repeat the above loop structure for the other conditions...
+            
+                $barcode0 = "";
+                $barcode1 = "";
+                $barcode2 = "";
+                $barcode3 = "";
+            
+                foreach ($this->dtabOra as $i => $row) {
+                    $row = (array)$row;
+                    if (substr($row['prdcd'], -1) === '1') {
+                        $barcode1 = trim($row['barc'] . ' ' . $row['bar2']);
+                    }
+                    if (substr($row['prdcd'], -1) === '2') {
+                        $barcode2 = trim($row['barc'] . ' ' . $row['bar2']);
+                    }
+                    if (substr($row['prdcd'], -1) === '3') {
+                        $barcode3 = trim($row['barc'] . ' ' . $row['bar2']);
+                    }
+                    if (substr($row['prdcd'], -1) === '0') {
+                        $barcode0 = trim($row['barc'] . ' ' . $row['bar2']);
+                    }
+                }
+            
+                if ($barcode1 !== '') {
+                    $barcode = $barcode1;
+                } elseif ($barcode2 !== '') {
+                    $barcode = $barcode2;
+                } elseif ($barcode3 !== '') {
+                    $barcode = $barcode3;
+                } else {
+                    $barcode = $barcode0;
+                }
+
+            } 
+
+            if ($jmlhs > 3) {
+                $prodID = str_replace("0/", "", $prodID);
+                for ($i = 0; $i < 3; $i++) {
+                    $this->price_a[$i] = $this->price_a[$i + 1];
+                    $this->price_unit[$i] = $this->price_unit[$i + 1];
+                    $this->price_all[$i] = $this->price_all[$i + 1];
+                    $this->jmlL[$i] = $this->jmlL[$i + 1];
+                    $this->unit[$i] = $this->unit[$i + 1];
+                }
+            }
+
+            $i = 4;
+            while ($i > 0) {
+                if ($this->price_all[$i] === $this->price_all[$i - 1] && $this->price_all[$i] !== 0 && $this->price_all[$i - 1] !== 0) {
+                    $this->price_all[$i] = 0;
+                    $this->price_a[$i] = 0;
+                    $this->price_unit[$i] = 0;
+                    $this->jmlL[$i] = "";
+                    $this->unit[$i] = "";
+                    if (strrpos($prodID, "/") !== false) {
+                        $prodID = substr($prodID, 0, strrpos($prodID, "/") - 1);
+                    }
+                }
+                $i = $i - 1;
+            }
+
+            if ($prodID === "") {
+                if ($this->dtKeluar === "") {
+                    $this->dtKeluar = "* "." - " . trim($desc);
+                } else {
+                    $this->dtKeluar = $this->dtKeluar . PHP_EOL . "* "." - " . trim($desc);
+                }
+            } else {
+                $strdata_insert = [];
+                $this->LRec = 1;
+                for ($i = 0; $i < $jmlPrint; $i++) {
+                        $strdata_insert [] = [
+                                'ipadd' => $this->ip_address,
+                                'prdcd' => isset($prodID) ? $prodID : null,
+                                'kplu' => isset($kplu) ? $kplu : null,
+                                'nama1' => strlen(trim(str_replace("'", "''", $desc))) <= 40 ? trim(str_replace("'", "''", $desc)) : ' ',
+                                'nama2' => strlen(trim(str_replace("'", "''", $desc))) > 40 ? trim(str_replace("'", "''", $desc)) : '',
+                                'barc' => isset($barcode) ? $barcode : null,
+                                'jml1' => isset($this->jmlL[0]) ? $this->jmlL[0] : null,
+                                'jml2' => isset($this->jmlL[1]) ? $this->jmlL[1] : null,
+                                'jml3' => isset($this->jmlL[2]) ? $this->jmlL[2] : null,
+                                'unit1' => isset($this->unit[0]) ? $this->unit[0] : null,
+                                'unit2' => isset($this->unit[1]) ? $this->unit[1] : null,
+                                'unit3' => isset($this->unit[2]) ? $this->unit[2] : null,
+                                'price_all1' => $this->price_all[0] === 0 ? null : $this->price_all[0],
+                                'price_all2' => $this->price_all[1] === 0 ? null : $this->price_all[1],
+                                'price_all3' => $this->price_all[2] === 0 ? null : $this->price_all[2],
+                                'price_unit1' => $this->price_unit[0] === 0 ? null : $this->price_unit[0],
+                                'price_unit2' => $this->price_unit[1] === 0 ? null : $this->price_unit[1],
+                                'price_unit3' => $this->price_unit[2] === 0 ? null : $this->price_unit[2],
+                                'fmbsts' => isset($fmbsts) ? $fmbsts : null,
+                                'flag' => '',
+                                'lokasi' => str_replace("'", "", trim((isset($fmkrak) ? $fmkrak : null)) . '/' . trim((isset($fmsrak) ? $fmsrak : null)) . '/' . trim((isset($fmtipe) ? $fmtipe : null)) . '/' . trim((isset($fmselv) ? $fmselv : null)) . '/' . str_pad(trim((isset($fmnour) ? $fmnour : null)), 2, '0') . '/' . trim((isset($fmface) ? $fmface : null)) . '/' . trim((isset($fmtrdb) ? $fmtrdb : null)) . '/' . trim((isset($fmtrab) ? $fmtrab : null))),
+                                'fmkdsb' => str_replace("'", "", (isset($fmkdsb) ? $fmkdsb : null)),
+                                'statusppn' => isset($pkp) ? $pkp : null,
+                                'tglinsert' => date('Y-m-d H:i:s'),
+                                'lrec' => $this->LRec,
+                                'div' => str_replace("'", "", (isset($div) ? $div : null)),
+                                'dept' => str_replace("'", "", (isset($dept) ? $dept : null)),
+                                'katb' => str_replace("'", "", (isset($katb) ? $katb : null)),
+                            ];
+            
+                    $this->LRec++;
+                }
+                $this->DB_PGSQL->table('tblabel_detail_master')->insert($strdata_insert);
+            }
+
+            
+            $this->DB_PGSQL->commit();
+            return true;
+        } catch (\Throwable $th) {
+            
+            $this->DB_PGSQL->rollBack();
+            dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
+
+
+    }
     public function proses_prdcd($prdcd=null,$desc = null, $jmlPrint = null, $tipe= null, $satuan = ["all"]){
         
         try {
@@ -622,31 +1334,30 @@ class LabelController extends Controller
                 // end convert to array data
                 
                 foreach ($results as $i => $row) {
-                    $row = (array)$row;
-                    if (substr($row['prdcd'], -1) == '0') {
-                        if ($row['ptag'] !== 'Z' && $row['ptag'] !== 'X' && $row['ptag'] !== 'C' && $row['ptag'] !== 'Q') {
-                            if ($row['kttk'] === '' && $row['kcab'] === '') {
-                                break;
-                            } else {
+                    // $row = (array)$row;
+                    // if (substr($row['prdcd'], -1) == '0') {
+
+                        $test[] = $row->ptag !== 'Z' && $row->ptag !== 'X' && $row->ptag !== 'C' && $row->ptag !== 'Q';
+                        if ($row->ptag !== 'Z' && $row->ptag !== 'X' && $row->ptag !== 'C' && $row->ptag !== 'Q') {
+                            if (!($row->kttk === '' && $row->kcab === '')) {
+                               
                                 $this->cek_price($i, $jmlhs);
-                                $kplu = $row['kplu'];
-                                $fmbsts = $row['fmbsts'];
-                                $this->barc[$jmlhs] = trim($row['barc'] . ' ' . $row['bar2']);
+                                $kplu = $row->kplu;
+                                $fmbsts = $row->fmbsts;
+                                $this->barc[$jmlhs] = trim($row->barc . ' ' . $row->bar2);
                                 if ($this->barc[$jmlhs] !== '') {
                                     if (is_numeric(str_replace(' ', '', $this->barc[$jmlhs]))) {
                                         $barcode = $this->barc[$jmlhs];
                                     }
                                 }
-                                $this->unit[$jmlhs] = $row['unit'];
-                                if ($pkp === '') $pkp = $row['pkp'] . $row['pkp2'];
+                                $this->unit[$jmlhs] = $row->unit;
+                                if ($pkp === '') $pkp = $row->pkp . $row->pkp2;
                                 $prodID = (string)substr(trim($prdcd), 0, 7);
+
                                 $jmlhs++;
-                                break;
                             }
-                        } else {
-                            break;
-                        }
-                    }
+                        } 
+                    // }
                 }
 
                 // convert to object data
@@ -718,7 +1429,7 @@ class LabelController extends Controller
                 }
                 $i = $i - 1;
             }
-
+            
             if ($prodID === "") {
                 if ($this->dtKeluar === "") {
                     $this->dtKeluar = "* "." - " . trim($desc);
@@ -759,7 +1470,6 @@ class LabelController extends Controller
                                 'dept' => str_replace("'", "", (isset($dept) ? $dept : null)),
                                 'katb' => str_replace("'", "", (isset($katb) ? $katb : null)),
                             ];
-            
                     $this->LRec++;
                 }
                 $this->DB_PGSQL->table('tblabel_detail_master')->insert($strdata_insert);
@@ -837,8 +1547,11 @@ class LabelController extends Controller
 
     
 
-    public function cetak(){
-        return view('template-print.print');
+    public function cetak(Request $request){
+        $data = $this->master_label($request);
+
+        // return view('template-print.print');
+        return view('cetak-label-price-tag.label.print-label',compact('data'));
         // return $this->printPDF();
     }
 }

@@ -17,7 +17,7 @@
             <span>Menu</span>
         </a>
        
-        <div id="collapseMember" class="collapse {{ (request()->is('*label*'))|| (request()->is('*home*')) ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+        <div id="collapseMember" class="collapse {{ (request()->is('*promo*'))|| (request()->is('*home*')) ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <a class="collapse-item collapse-item-store-setting {{ (request()->is('*list*')) || (request()->is('*home*')) ? 'active' : '' }}" href="{{ url('/home') }}"> Label</a>
                 <a class="collapse-item collapse-item-royalti {{ (request()->is('*promo*')) ? 'active' : '' }}" href="{{ url('/promo') }}">Promo</a>

@@ -1,13 +1,13 @@
 let selectedTable,
     selectedData  =  [],
     dataMember =[],
-    listMasterProduk = [],
+    listMasterPromo = [],
     listMasterLabel= [],
     search  =  false,
     page = 1,
     field = null,
     cabang = null,
-    last_Selving = null;
+    checkbox = $('#checkbox1').val();
 var temp_function_deleteAll = null,
     temp_function_viewHasil = null;
 
@@ -37,9 +37,6 @@ $(document).ready(function(){
          }
       });
 
-      $('.input-data').prop('disabled',true);
-      $('.list-label').hide();
-      $('.input-form').hide();
       $('.select2').select2({
          allowClear: false
       }); 
@@ -48,8 +45,14 @@ $(document).ready(function(){
          autoclose: true,
          todayHighlight: true
       });
-      getDataProduk();
-      getDataDivisi();
+      $('#checkbox1').change(function() {
+         $('#prdcd').prop('disabled', $(this).prop('checked'));
+         $('#select1').prop('disabled', !$(this).prop('checked'));
+         $('#select2').prop('disabled', !$(this).prop('checked'));
+       });
+      getDataPromo();
+      // getDataDivisi();
+      
 });
 
 toggleInput =(nameClass)=>{
@@ -100,198 +103,88 @@ satuanSelected=()=>{
       });
    
 }
+
 changePRDCD=()=>{
+   let csrf = $('meta[name="csrf-token"]').attr('content'),
+       formCheckPRDCD = new FormData(),
+       prdcd = $('#prdcd').val();
+
+   formCheckPRDCD.append('_token', csrf);
+   formCheckPRDCD.append('prdcd', prdcd);
+
    $('#label-tag').loading('toggle');
+   $.ajax({
+      url: link+'/api/promo/check_prdcd',
+      method: 'POST',
+      data: formCheckPRDCD,
 
-   let prdcd = $("#prdcd").val(),
-       dataMasterProduk = listMasterProduk[prdcd];
-       $("#desc").val(dataMasterProduk.deskripsi);
+      success: function (response) {
+
+          // console.log(response.download,response.redirect,runNext,multipleForm)
+          let messages = response.messages?response.messages:'Data Berhasil Dihapus';
+          Swal.fire(
+              'Berhasil',
+               messages,
+              'success'
+          )
+         //  getDataLabel('');
+      },
+      error: function (xhr) {
+
+          let res = xhr.responseJSON,
+              messages = xhr.responseJSON.messages?xhr.responseJSON.messages:'Proses Hapus Gagal';
+             
+         $('#label-tag').loading('toggle');  
+           Swal.fire({
+              title: 'Gagal',
+              html: messages,
+              icon: 'warning',
+              allowOutsideClick: false,
+              onOpen: () => {
+                      swal.hideLoading()
+              }
+          });
+          if ($.isEmptyObject(res) == false) {
+              $.each(res.errors, function (i, value) {
+                  $('#' + i).addClass('is-invalid');
+                  $('.' + i).append('<span class="help-block"><strong>' + value + '</strong></span>')
+              })
+          }
+
+      },
+      cache: false,
+      contentType: false,
+      processData: false,
+      dataType: "json"
+  }).done(function () {
+
+   $('#label-tag').loading('toggle');
+  });  
+}
+
+getDataPromo =()=>{
+   let select = "";
+       listMasterPromo = [];
    
    $('#label-tag').loading('toggle');
-}
-
-
-changeRak=(dataRak)=>{
-   let select = "",
-       rak = $('#rak').val();
-
-       tipe = $('#tipe').val('');
-       sub_rak = $('#sub-rak').val('');
-       $(".option-subrak").remove();
-       $(".option-tipe").remove();
-       $('#label-tag').loading('toggle');
-   $.getJSON(link + "/api/label/data/sub_rak?rak="+rak, function(data) {
-
-      // list select subrak=
-      if(data){
-         
-         $.each(data,function(key,value){
-               select+=` <option class="option-subrak"  value="${value.fmsrak}" > ${value.fmsrak} </option>`;
-         });
-         $("#sub-rak").append(select);
-      }
-
-   }).done(function(){
-
-         $('#label-tag').loading('toggle');
-   })
-}
-changeSubRak=(dataSubRak)=>{
-   let select = "",
-       rak = $('#rak').val(),
-       sub_rak = $('#sub-rak').val();
-
-       tipe = $('#tipe').val('');
-       $(".option-tipe").remove();
-      $('#label-tag').loading('toggle');
-      $.getJSON(link + "/api/label/data/tipe_rak?sub_rak="+sub_rak+"&&rak="+rak, function(data) {
-
-         // list select tipe rak
-         if(data){
-            $.each(data,function(key,value){
-                  select+=` <option class="option-tipe"  value="${value.fmtipe}" > ${value.fmtipe} </option>`;
-            });
-            $("#tipe").append(select);
-         }
-
-      }).done(function(){
-
-         $('#label-tag').loading('toggle');
-      })
-}
-changeTipeRak=(dataSubRak)=>{
-   let select = "",
-       tipe = $('#tipe').val(),
-       rak = $('#rak').val(),
-       sub_rak = $('#sub-rak').val()
-       length_Selving = 0;
-   
-       $(".option-sheving").remove();
-       $('#label-tag').loading('toggle');
-      $.getJSON(link + "/api/label/data/shelving_rak?sub_rak="+sub_rak+"&&rak="+rak+"&&tipe="+tipe, function(data) {
-
-         // list select tipe rak
-         if(data){
-            length_Selving = data.length;
-            last_Selving =parseInt(data[(length_Selving-1)].fmselv);
-            $.each(data,function(key,value){
-                  select+=` <option class="option-sheving"  value="${parseInt(value.fmselv)}" > ${parseInt(value.fmselv)} </option>`;
-            });
-            $("#select1").append(select);
-         }
-
-      }).done(function(){
-
-         $('#label-tag').loading('toggle');
-      })
-}
-
-changeDiv=(dataDiv)=>{
-   let select = "",
-   div = $('#div').val();
-
-       dept = $('#dept').val('');
-       katb = $('#katb').val('');
-       $(".option-dept").remove();
-       $(".option-katb").remove();
-       $('#label-tag').loading('toggle');
-   $.getJSON(link + "/api/label/data/dept?div="+div, function(data) {
-
-      // list select subrak=
-      if(data){
-         
-         $.each(data,function(key,value){
-               select+=` <option class="option-dept"  value="${value.dep_kodedepartement}" >${value.dep_kodedepartement} - ${value.dep_namadepartement} </option>`;
-         });
-         $("#dept").append(select);
-      }
-
-   }).done(function(){
-
-         $('#label-tag').loading('toggle');
-   })
-}
-
-changeDept=(dataDept)=>{
-   let select = "",
-      dept = $('#dept').val(),
-      div = $('#div').val();
-
-       katb = $('#katb').val('');
-       $(".option-katb").remove();
-       $('#label-tag').loading('toggle');
-   $.getJSON(link + "/api/label/data/katb?div="+div+"&&dept="+dept, function(data) {
-
-      // list select subrak=
-      if(data){
-         
-         $.each(data,function(key,value){
-               select+=` <option class="option-katb"  value="${value.kat_kodekategori}" >(${value.kat_kodedepartement})${value.kat_kodekategori} - ${value.kat_namakategori} </option>`;
-         });
-         $("#katb").append(select);
-      }
-
-   }).done(function(){
-
-         $('#label-tag').loading('toggle');
-   })
-}
-
-updateSelect2Options=()=>{
-   const select1 = document.getElementById("select1");
-   const select2 = document.getElementById("select2");
-
-   $('#select2').prop('disabled',false);
-   // Clear existing options
-   select2.innerHTML = '';
-
-   // Get the selected value from Select 1
-   const selectedValue = parseInt(select1.value);
-   
-   // Populate options for Select 2 based on the selected value in Select 1
-   for (let i = 1; i <= last_Selving; i++) {
-     // Add an option only if it's greater than the selected value in Select 1
-     if (i >= selectedValue) {
-       const option = document.createElement("option");
-       option.value = i;
-       option.text = `${i}`;
-       select2.appendChild(option);
-     }
-   }
- }
-
-getDataDivisi =()=>{
-   let select = "";
-   $.getJSON(link + "/api/label/data/divisi", function(data) {
-
-      // list select divisi
-      if(data){
-         $.each(data,function(key,value){
-               select+=` <option value="${value.div_kodedivisi}" >(${value.div_kodedivisi}) - ${value.div_namadivisi}</option>`;
-
-         });
-         $("#div").append(select);
-      }
-
-   })
-
-}
-
-getDataProduk =()=>{
-   let select = "";
-       listMasterProduk = [];
-   $.getJSON(link + "/api/label/data/produk", function(data) {
+   $.getJSON(link + "/api/promo/data/promo", function(data) {
 
       // list select cabang
+      console.log(data)
       if(data.data){
          $.each(data.data,function(key,value){
-               select+=` <option value="${value.prdcd}" >(${value.prdcd}) - ${value.deskripsi}</option>`;
-               listMasterProduk[value.prdcd] = value;
+               select+=` <option value="${value.brg_prdcd}" >(${value.brg_prdcd}) - ${value.brg_merk} || ${value.brg_nama} || ${value.brg_ukuran} || (${value.prmd_tglawal+"-"+value.prmd_tglakhir})</option>`;
+               listMasterPromo[value.prdcd] = value;
 
          });
          $("#prdcd").append(select);
+         $("#select1").append(`<option value="${data.tgl_awal}" >${data.tgl_awal}</option>`);
+         $("#select2").append(`<option value="${data.tgl_akhir}" >${data.tgl_akhir}</option>`);
       }
 
+   }).done(function(){
+
+      $('#label-tag').loading('toggle');
    })
 
 }
@@ -475,8 +368,6 @@ deleteDataLable=(data = null)=>{
           let res = xhr.responseJSON,
               messages = xhr.responseJSON.messages?xhr.responseJSON.messages:'Proses Hapus Gagal';
               
-          $('#label-tag').loading('toggle');
-          console.log('lewat');
            Swal.fire({
               title: 'Gagal',
               html: messages,
@@ -492,8 +383,6 @@ deleteDataLable=(data = null)=>{
                   $('.' + i).append('<span class="help-block"><strong>' + value + '</strong></span>')
               })
           }
-
-      },
       },
       cache: false,
       contentType: false,

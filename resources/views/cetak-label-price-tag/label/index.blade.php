@@ -132,6 +132,7 @@
                             <div class="card input-form by-rak">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/byrak')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By Rak:</label>
@@ -217,7 +218,7 @@
                                                 <div class="form-group d-flex justify-content-center">
                                                    <input type="hidden" class="form-control multipleForm" name="multipleForm" value="2">
                                                    <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
-                                                   <input type="hidden" class="form-control" id="runNext2" onchange="getDataLabel(`prdcd=${$('#prdcd').val()}`)">
+                                                   <input type="hidden" class="form-control" id="runNext2" onchange="getDataLabel(this.value)" name="runNext2">
                                                    <button class="btn btn-sm btn-primary"  type="button" onclick="submitByRak(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
@@ -230,6 +231,7 @@
                             <div class="card input-form by-div">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/bydiv')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By Div,Dep, Katb:</label>
@@ -241,7 +243,7 @@
                                                 <div class="form-group">
                                                     <label for="div">DIV</label>
                                                     <div class="form-group">
-                                                        <select class="form-control select2 input-data by-div" name="div" id="div">
+                                                        <select class="form-control select2 input-data by-div" name="div" id="div" onchange="changeDiv(this)">
                                                             <option value="" disabled selected>Pilih DIV</option>
                                                         
                                                         </select>
@@ -254,7 +256,7 @@
                                                 <div class="form-group">
                                                     <label for="dept">DEPT</label>
                                                     <div class="form-group">
-                                                        <select class="form-control select2 input-data by-div" name="dept" id="dept">
+                                                        <select class="form-control select2 input-data by-div" name="dept" id="dept" onchange="changeDept(this)">
                                                             <option value="" disabled selected>Pilih DEPT</option>
                                                         
                                                         </select>
@@ -279,7 +281,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="3">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <input type="hidden" class="form-control" id="runNext3" onchange="getDataLabel(this.value)" name="runNext3">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitByDiv(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -291,6 +296,7 @@
                             <div class="card input-form by-tanggal">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/bytanggal')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By Tanggal Aktif:</label>
@@ -302,7 +308,7 @@
                                                 
                                                     <div class="form-group">
                                                         <label for="datepicker">Tanggal Aktif</label>
-                                                        <input type="text" class="form-control input-data by-tanggal" id="datepicker" placeholder="Masukan Tanggal Aktif" readonly>
+                                                        <input type="text" class="form-control input-data by-tanggal" id="datepicker" name="tanggal_aktif" placeholder="Masukan Tanggal Aktif" readonly>
                                                     </div>
                                                     
                                             </div>
@@ -311,7 +317,11 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="4">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <input type="hidden" class="form-control" id="runNext4" onchange="getDataLabel(this.value)" name="runNext4">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitByTanggal(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -323,6 +333,7 @@
                             <div class="card input-form by-setting">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/bysetting')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By Setting Pagi Hari:</label>
@@ -332,7 +343,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="5">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <input type="hidden" class="form-control" id="runNext5" onchange="getDataLabel(this.value)" name="runNext5">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitBySetting(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -344,6 +358,7 @@
                             <div class="card input-form by-flag">
                                 <div class="card-body">
                                     <form action="{{url('/api/insert/byflag')}}" method="post" class="form_data">
+                                        @csrf
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <label>By Perubahan Flag Aktivasi:</label>
@@ -353,7 +368,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-12">
                                                 <div class="form-group d-flex justify-content-center">
-                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                   <input type="hidden" class="form-control multipleForm" name="multipleForm" value="6">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <input type="hidden" class="form-control" id="runNext6" onchange="getDataLabel(this.value)" name="runNext6">
+                                                   <button class="btn btn-sm btn-primary"  type="button" onclick="submitByFlag(this)"> Insert Ke Database</button>
                                                 </div>
                                             </div>
                                         </div>
