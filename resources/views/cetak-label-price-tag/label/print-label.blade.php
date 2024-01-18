@@ -43,7 +43,7 @@
            line-height: 16px;
            font-weight: bold;
            margin-bottom: -3px;
-           width:283px;
+           width:229px;
        }
        .tr1{
             line-height: 14px;
@@ -81,13 +81,13 @@
             display: inline-block;
         }
        .rotate-2 {
-            margin-left: -195px;
+            margin-left: -190px;
             /* Rotate the element by 45 degrees */
             transform: rotate(270deg) scale(0.5);
             /* Optional: Set the transform origin to center the rotation */
             transform-origin: center;
             display: inline-block;
-            font-size:46px;
+            font-size:60px;
         }
 
 @endsection
@@ -141,7 +141,7 @@
                  {!! DNS1D::getBarcodeHTML($barcode[$length], 'C128') !!}
              </div>
              <div class="rotate-2">
-                 NR12B 0212
+                 N00001C
              </div>
          </div> 
         @endforeach

@@ -312,258 +312,260 @@ class PromosiController extends Controller
     public function insert_prdcd_all(Request $request){
 
         return response()->json(['errors'=>false,'messages'=>"PRDCD '0036870' : Nilai PRMD_HrgJual Di M_HPROMO Lebih Besar Dari PRD_HrgJual Di TBMASTER_PRODMAST"],422);
-        // try {
-        //     $this->DB_PGSQL->beginTransaction();
+        try {
+            $this->DB_PGSQL->beginTransaction();
 
             
-        //         $i = 0;
-        //         $p = 0;
-        //         $memUnit = "";
-        //         $memPRDCD = "";
-        //         $z = 0;
-        //         $keluar = false;
-        //         $keluar = false;
-        //         $promoDiv = "";
-        //         $promoDept = "";
-        //         $promoKatb = "";
-        //         $plu_not_found = [];
+                $i = 0;
+                $p = 0;
+                $memUnit = "";
+                $memPRDCD = "";
+                $z = 0;
+                $keluar = false;
+                $keluar = false;
+                $promoDiv = "";
+                $promoDept = "";
+                $promoKatb = "";
+                $plu_not_found = [];
 
-        //         $keluar = false;
-        //         $memUnit = "";
-        //         $memPRDCD = "";
-        //         $promoDiv = "";
-        //         $promoDept = "";
-        //         $promoKatb = "";
+                $keluar = false;
+                $memUnit = "";
+                $memPRDCD = "";
+                $promoDiv = "";
+                $promoDept = "";
+                $promoKatb = "";
         
-        //         $strmysql = $this->DB_PGSQL->table("temp_rowpromo")->delete();
-        //         $data_promo = $this->master_promo();
+                $strmysql = $this->DB_PGSQL->table("temp_rowpromo")->delete();
+                $data_promo = $this->master_promo();
         
-        //         foreach ($data_promo as $key => $result) {
-        //             $this->DB_PGSQL->table("temp_rowpromo")->insert(["ipadd"=>$this->ip_address,"rowindex"=>$key]);
-        //         }
+                foreach ($data_promo as $key => $result) {
+                    $this->DB_PGSQL->table("temp_rowpromo")->insert(["ipadd"=>$this->ip_address,"rowindex"=>$key]);
+                }
                 
         
-        //         $strmysql = $this->DB_PGSQL
-        //                          ->table("temp_rowpromo")
-        //                          ->whereRaw("ipadd = '$this->ip_address'")
-        //                          ->get();
+                $strmysql = $this->DB_PGSQL
+                                 ->table("temp_rowpromo")
+                                 ->whereRaw("ipadd = '$this->ip_address'")
+                                 ->get();
                
-        //         foreach ($strmysql as $key => $result) {
-        //             $sql = $this->DB_PGSQL
-        //                         ->table("tbtr_promomd")
-        //                         ->selectRaw("
-        //                             PRD_PRDCD, PRD_KODETAG, PRD_UNIT, PRD_KodeDivisi, PRD_KodeDepartement, PRD_KodeKategoriBarang, PRMD_HrgJual, PRD_HrgJual
-        //                         ")
-        //                         ->leftJoin("tbmaster_prodmast",function($join){
-        //                             $join->on("prmd_prdcd" ,"=" ,"prd_prdcd");
-        //                         })
-        //                         ->whereRaw("prmd_tglakhir::date >= current_date::date")
-        //                         ->whereRaw("prmd_tglawal::date <= current_date::date")
-        //                         ->whereRaw("SUBSTR(PRMD_PRDCD,1,6)='" . substr($data_promo[$key]->fmkode, 0, 6) . "'")
-        //                         ->get();
+                foreach ($strmysql as $key => $result) {
+                    $sql = $this->DB_PGSQL
+                                ->table("tbtr_promomd")
+                                ->selectRaw("
+                                    PRD_PRDCD, PRD_KODETAG, PRD_UNIT, PRD_KodeDivisi, PRD_KodeDepartement, PRD_KodeKategoriBarang, PRMD_HrgJual, PRD_HrgJual
+                                ")
+                                ->leftJoin("tbmaster_prodmast",function($join){
+                                    $join->on("prmd_prdcd" ,"=" ,"prd_prdcd");
+                                })
+                                ->whereRaw("prmd_tglakhir::date >= current_date::date")
+                                ->whereRaw("prmd_tglawal::date <= current_date::date")
+                                ->whereRaw("SUBSTR(PRMD_PRDCD,1,6)='" . substr($data_promo[$key]->fmkode, 0, 6) . "'")
+                                ->get();
     
-        //             if (count($sql) === 0) {
-        //                 $plu_not_found[] = "PLU [" . $data_promo[$key]->fmkode. "] tidak terdaftar di PRODMAST";
-        //                 // echo "PLU [" . $data_promo[$key]->fmkode. "] tidak terdaftar di PRODMAST" . PHP_EOL;
-        //             } 
+                    if (count($sql) === 0) {
+                        $plu_not_found[] = "PLU [" . $data_promo[$key]->fmkode. "] tidak terdaftar di PRODMAST";
+                        // echo "PLU [" . $data_promo[$key]->fmkode. "] tidak terdaftar di PRODMAST" . PHP_EOL;
+                    } 
                     
-        //         }    
+                }    
 
 
 
 
 
-        //         // Loop through the rows of data_promo
-        //         for ($z = 0; $z < count($data_promo); $z++) {
-        //             // Check if the last character of PRD_PRDCD is "1"
-        //             if (substr($data_promo[$z]->prd_prdcd, -1) === "1") {
-        //                 // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
-        //                 if ($data_promo[$z]->prmd_hrgjual >= $data_promo[$z]->prd_hrgjual) {
-        //                     $keluar = true;
-        //                     break;
-        //                 }
+                // Loop through the rows of data_promo
+                for ($z = 0; $z < count($data_promo); $z++) {
+                    // Check if the last character of PRD_PRDCD is "1"
+                    if (substr($data_promo[$z]->prd_prdcd, -1) === "1") {
+                        // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
+                        if ($data_promo[$z]->prmd_hrgjual >= $data_promo[$z]->prd_hrgjual) {
+                            $keluar = true;
+                            break;
+                        }
 
-        //                 // Check the conditions for memUnit, memPRDCD, and other variables
-        //                 if (
-        //                     strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "C" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "X" ||
-        //                     strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Z" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Q"
-        //                 ){
-        //                     $memUnit = $data_promo[$z]->prd_unit;
-        //                     $memPRDCD = $data_promo[$z]->prd_prdcd;
-        //                     $promoDiv = $data_promo[$z]->prd_kodedivisi;
-        //                     $promoDept = $data_promo[$z]->prd_kodedepartement;
-        //                     $promoKatb = $data_promo[$z]->prd_kodekategoribarang;
-        //                     break;
-        //                 }
-        //             }
-        //         }
+                        // Check the conditions for memUnit, memPRDCD, and other variables
+                        if (
+                            strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "C" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "X" ||
+                            strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Z" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Q"
+                        ){
+                            $memUnit = $data_promo[$z]->prd_unit;
+                            $memPRDCD = $data_promo[$z]->prd_prdcd;
+                            $promoDiv = $data_promo[$z]->prd_kodedivisi;
+                            $promoDept = $data_promo[$z]->prd_kodedepartement;
+                            $promoKatb = $data_promo[$z]->prd_kodekategoribarang;
+                            break;
+                        }
+                    }
+                }
 
-        //         // Loop through the rows of data_promo
-        //         for ($z = 0; $z < count($data_promo); $z++) {
-        //             // Check if keluar is false
-        //             if (!$keluar) {
-        //                 // Check if memUnit is empty
-        //                 if (empty($memUnit)) {
-        //                     // Check if the last character of PRD_PRDCD is "2"
-        //                     if (substr($data_promo[$z]->prd_prdcd, -1) === "2") {
-        //                         // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
-        //                         if ($data_promo[$z]->prmd_hrgjual >= $data_promo[$z]->prd_hrgjual) {
-        //                             $keluar = true;
-        //                             break;
-        //                         }
+                // Loop through the rows of data_promo
+                for ($z = 0; $z < count($data_promo); $z++) {
+                    // Check if keluar is false
+                    if (!$keluar) {
+                        // Check if memUnit is empty
+                        if (empty($memUnit)) {
+                            // Check if the last character of PRD_PRDCD is "2"
+                            if (substr($data_promo[$z]->prd_prdcd, -1) === "2") {
+                                // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
+                                if ($data_promo[$z]->prmd_hrgjual >= $data_promo[$z]->prd_hrgjual) {
+                                    $keluar = true;
+                                    break;
+                                }
 
-        //                         // Check the conditions for memUnit, memPRDCD, and other variables
-        //                         if (
-        //                             strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "C" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "X" ||
-        //                             strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Z" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Q"
-        //                         ) {
-        //                             $memUnit = $data_promo[$z]->prd_unit;
-        //                             $memPRDCD = $data_promo[$z]->prd_prdcd;
-        //                             $promoDiv = $data_promo[$z]->prd_kodedivisi;
-        //                             $promoDept = $data_promo[$z]->prd_kodedepartement;
-        //                             $promoKatb = $data_promo[$z]->prd_kodekategoribarang;
-        //                             break;
-        //                         }
-        //                     }
-        //                 }
-        //                 // else {
-        //                 //     break;
-        //                 // }
-        //             } 
-        //             // else {
-        //             //     break;
-        //             // }
-        //         }
+                                // Check the conditions for memUnit, memPRDCD, and other variables
+                                if (
+                                    strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "C" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "X" ||
+                                    strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Z" && strtoupper(trim($data_promo[$z]->prd_kodetag)) !== "Q"
+                                ) {
+                                    $memUnit = $data_promo[$z]->prd_unit;
+                                    $memPRDCD = $data_promo[$z]->prd_prdcd;
+                                    $promoDiv = $data_promo[$z]->prd_kodedivisi;
+                                    $promoDept = $data_promo[$z]->prd_kodedepartement;
+                                    $promoKatb = $data_promo[$z]->prd_kodekategoribarang;
+                                    break;
+                                }
+                            }
+                        }
+                        // else {
+                        //     break;
+                        // }
+                    } 
+                    // else {
+                    //     break;
+                    // }
+                }
 
-        //         // Loop through the rows of data_promo
-        //         foreach ($data_promo as $z => $row) {
-        //             // Check if keluar is false
-        //             if (!$keluar) {
-        //                 // Check if memUnit is empty
-        //                 if (empty($memUnit)) {
-        //                     // Check if the last character of PRD_PRDCD is "3"
-        //                     if (substr($row->prd_prdcd, -1) === "3") {
-        //                         // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
-        //                         if ($row->prmd_hrgjual >= $row->prd_hrgjual) {
-        //                             $keluar = true;
-        //                             break;
-        //                         }
+                // Loop through the rows of data_promo
+                foreach ($data_promo as $z => $row) {
+                    // Check if keluar is false
+                    if (!$keluar) {
+                        // Check if memUnit is empty
+                        if (empty($memUnit)) {
+                            // Check if the last character of PRD_PRDCD is "3"
+                            if (substr($row->prd_prdcd, -1) === "3") {
+                                // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
+                                if ($row->prmd_hrgjual >= $row->prd_hrgjual) {
+                                    $keluar = true;
+                                    break;
+                                }
 
-        //                         // Check the conditions for memUnit, memPRDCD, and other variables
-        //                         if (
-        //                             strtoupper(trim($row->prd_kodetag)) !== "C" && strtoupper(trim($row->prd_kodetag)) !== "X" ||
-        //                             strtoupper(trim($row->prd_kodetag)) !== "Z" && strtoupper(trim($row->prd_kodetag)) !== "Q"
-        //                         ) {
-        //                             $memUnit = $row->prd_unit;
-        //                             $memPRDCD = $row->prd_prdcd;
-        //                             $promoDiv = $row->prd_kodedivisi;
-        //                             $promoDept = $row->prd_kodedepartement;
-        //                             $promoKatb = $row->prd_kodekategoribarang;
-        //                             break;
-        //                         }
-        //                     }
-        //                 } 
-        //                 // else {
-        //                 //     break;
-        //                 // }
-        //             } 
-        //             // else {
-        //             //     break;
-        //             // }
-        //         }
+                                // Check the conditions for memUnit, memPRDCD, and other variables
+                                if (
+                                    strtoupper(trim($row->prd_kodetag)) !== "C" && strtoupper(trim($row->prd_kodetag)) !== "X" ||
+                                    strtoupper(trim($row->prd_kodetag)) !== "Z" && strtoupper(trim($row->prd_kodetag)) !== "Q"
+                                ) {
+                                    $memUnit = $row->prd_unit;
+                                    $memPRDCD = $row->prd_prdcd;
+                                    $promoDiv = $row->prd_kodedivisi;
+                                    $promoDept = $row->prd_kodedepartement;
+                                    $promoKatb = $row->prd_kodekategoribarang;
+                                    break;
+                                }
+                            }
+                        } 
+                        // else {
+                        //     break;
+                        // }
+                    } 
+                    // else {
+                    //     break;
+                    // }
+                }
 
-        //         // Loop through the rows of data_promo
-        //         foreach ($data_promo as $z => $row) {
-        //             // Check if keluar is false
-        //             if (!$keluar) {
-        //                 // Check if memUnit is empty
-        //                 if (empty($memUnit)) {
-        //                     // Check if the last character of PRD_PRDCD is "0"
-        //                     if (substr($row->prd_prdcd, -1) === "0") {
-        //                         // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
-        //                         if ($row->prmd_hrgjual >= $row->prd_hrgjual) {
-        //                             $keluar = true;
-        //                             break;
-        //                         }
+                // Loop through the rows of data_promo
+                foreach ($data_promo as $z => $row) {
+                    // Check if keluar is false
+                    if (!$keluar) {
+                        // Check if memUnit is empty
+                        if (empty($memUnit)) {
+                            // Check if the last character of PRD_PRDCD is "0"
+                            if (substr($row->prd_prdcd, -1) === "0") {
+                                // Check if PRMD_HrgJual is greater than or equal to PRD_HrgJual
+                                if ($row->prmd_hrgjual >= $row->prd_hrgjual) {
+                                    $keluar = true;
+                                    break;
+                                }
 
-        //                         // Check the conditions for memUnit, memPRDCD, and other variables
-        //                         if (
-        //                             strtoupper(trim($row->ptag)) !== "C" && strtoupper(trim($row->ptag)) !== "X" ||
-        //                             strtoupper(trim($row->ptag)) !== "Z" && strtoupper(trim($row->ptag)) !== "Q"
-        //                         ) {
-        //                             $memUnit = $row->unit;
-        //                             $memPRDCD = $row->prdcd;
-        //                             $promoDiv = $row->div;
-        //                             $promoDept = $row->dept;
-        //                             $promoKatb = $row->katb;
-        //                             break;
-        //                         }
-        //                     }
-        //                 } else {
-        //                     break;
-        //                 }
-        //             } else {
-        //                 break;
-        //             }
-        //         }
+                                // Check the conditions for memUnit, memPRDCD, and other variables
+                                if (
+                                    strtoupper(trim($row->ptag)) !== "C" && strtoupper(trim($row->ptag)) !== "X" ||
+                                    strtoupper(trim($row->ptag)) !== "Z" && strtoupper(trim($row->ptag)) !== "Q"
+                                ) {
+                                    $memUnit = $row->unit;
+                                    $memPRDCD = $row->prdcd;
+                                    $promoDiv = $row->div;
+                                    $promoDept = $row->dept;
+                                    $promoKatb = $row->katb;
+                                    break;
+                                }
+                            }
+                        } 
+                        // else {
+                        //     break;
+                        // }
+                    } 
+                    // else {
+                    //     break;
+                    // }
+                }
 
-        //         if ($keluar) {
-        //             // Display message when keluar is true
-        //             echo "PRDCD [" . $gridProduk[$dtabOra4[$i][1]][0] . "] : Nilai PRMD_HrgJual Di TBTR_PROMOMD lebih besar dari PRD_HrgJual di PRODMAST\n";
-        //         } elseif (empty($memUnit)) {
-        //             // Display message when memUnit is empty
-        //             echo "Produk memiliki salah satu tag 'C', 'Z', 'Q', 'X' di TBMASTER_PRODMAST\n";
-        //         } else {
-        //             // Fetch data for insertion
-        //             $result = DB::select("
-        //                 SELECT BRG.*, a.FMKODE, a.FMJUAL, a.FMFRTG, a.FMTOTG
-        //                 FROM (
-        //                     SELECT
-        //                         SUBSTR(PRMD_PRDCD, 6) as fmkode,
-        //                         min(PRMD_Hrjual) as fmjual,
-        //                         PRMD_TglAwal as fmfrtg,
-        //                         PRMD_TglAkhir as fmtotg
-        //                     FROM TBTR_PROMOMD
-        //                     WHERE
-        //                         DATE_TRUNC('DAY', PRMD_TglAkhir) >= DATE_TRUNC('DAY', TO_DATE('" . now()->format('Ymd') . "','YYYYMMDD')) AND
-        //                         DATE_TRUNC('DAY', PRMD_TglAkhir) <= DATE_TRUNC('DAY', TO_DATE('" . now()->format('Ymd') . "','YYYYMMDD')) AND
-        //                         PRMD_PRDCD='" . $memPRDCD . "'
-        //                     GROUP BY SUBSTR(PRMD_PRCD, 1, 6), PRMD_TglAwal, PRMD_TglAkhir
-        //                 ) a, TBMASTER_BARANG BRG
-        //                 WHERE SUBSTR(a.FMKODE, 1, 6) = SUBSTR(BRG_PRDCD, 1, 6)
-        //             ");
+                if ($keluar) {
+                    // Display message when keluar is true
+                    echo "PRDCD [" . $gridProduk[$dtabOra4[$i][1]][0] . "] : Nilai PRMD_HrgJual Di TBTR_PROMOMD lebih besar dari PRD_HrgJual di PRODMAST\n";
+                } elseif (empty($memUnit)) {
+                    // Display message when memUnit is empty
+                    echo "Produk memiliki salah satu tag 'C', 'Z', 'Q', 'X' di TBMASTER_PRODMAST\n";
+                } else {
+                    // Fetch data for insertion
+                    $result = DB::select("
+                        SELECT BRG.*, a.FMKODE, a.FMJUAL, a.FMFRTG, a.FMTOTG
+                        FROM (
+                            SELECT
+                                SUBSTR(PRMD_PRDCD, 6) as fmkode,
+                                min(PRMD_Hrjual) as fmjual,
+                                PRMD_TglAwal as fmfrtg,
+                                PRMD_TglAkhir as fmtotg
+                            FROM TBTR_PROMOMD
+                            WHERE
+                                DATE_TRUNC('DAY', PRMD_TglAkhir) >= DATE_TRUNC('DAY', TO_DATE('" . now()->format('Ymd') . "','YYYYMMDD')) AND
+                                DATE_TRUNC('DAY', PRMD_TglAkhir) <= DATE_TRUNC('DAY', TO_DATE('" . now()->format('Ymd') . "','YYYYMMDD')) AND
+                                PRMD_PRDCD='" . $memPRDCD . "'
+                            GROUP BY SUBSTR(PRMD_PRCD, 1, 6), PRMD_TglAwal, PRMD_TglAkhir
+                        ) a, TBMASTER_BARANG BRG
+                        WHERE SUBSTR(a.FMKODE, 1, 6) = SUBSTR(BRG_PRDCD, 1, 6)
+                    ");
 
-        //             if (!empty($result)) {
-        //                 // Insert into Tb_SPromo table
-        //                 DB::insert("
-        //                     INSERT INTO Tb_SPromo
-        //                     VALUES (
-        //                         '" . $IPlocal . "',
-        //                         1,
-        //                         '" . now()->format('Y/m/d H:i:s') . "',
-        //                         '" . $result[0]->fmkode . "',
-        //                         '" . str_replace("'", "''", $result[0]->BRG_Merk) . "',
-        //                         '" . str_replace("'", "''", $result[0]->BRG_Nama) . "',
-        //                         '" . str_replace("'", "''", $result[0]->BRG_Flavor . ' ' . $result[0]->BRG_Ukuran) . "',
-        //                         " . $result[0]->fmjual . ",
-        //                         '" . now()->format('Y/m/d', strtotime($result[0]->fmfrtg)) . "',
-        //                         '" . now()->format('Y/m/d', strtotime($result[0]->fmtotg)) . "',
-        //                         '" . $memUnit . "',
-        //                         " . $PRec . ",
-        //                         '" . $promoDiv . "',
-        //                         '" . $promoDept . "',
-        //                         '" . $promoKatb . "'
-        //                     )
-        //                 ");
+                    if (!empty($result)) {
+                        // Insert into Tb_SPromo table
+                        DB::insert("
+                            INSERT INTO Tb_SPromo
+                            VALUES (
+                                '" . $IPlocal . "',
+                                1,
+                                '" . now()->format('Y/m/d H:i:s') . "',
+                                '" . $result[0]->fmkode . "',
+                                '" . str_replace("'", "''", $result[0]->BRG_Merk) . "',
+                                '" . str_replace("'", "''", $result[0]->BRG_Nama) . "',
+                                '" . str_replace("'", "''", $result[0]->BRG_Flavor . ' ' . $result[0]->BRG_Ukuran) . "',
+                                " . $result[0]->fmjual . ",
+                                '" . now()->format('Y/m/d', strtotime($result[0]->fmfrtg)) . "',
+                                '" . now()->format('Y/m/d', strtotime($result[0]->fmtotg)) . "',
+                                '" . $memUnit . "',
+                                " . $PRec . ",
+                                '" . $promoDiv . "',
+                                '" . $promoDept . "',
+                                '" . $promoKatb . "'
+                            )
+                        ");
 
-        //                 // Increment PRec
-        //                 $PRec += 1;
-        //             }
-        //         }
-        //         $strsql = "SELECT * FROM Tb_SPromo WHERE IPAdd='" . str_replace(".", "", $IPlocal) . "' ORDER BY tglInsert ASC";
+                        // Increment PRec
+                        $PRec += 1;
+                    }
+                }
+                $strsql = "SELECT * FROM Tb_SPromo WHERE IPAdd='" . str_replace(".", "", $IPlocal) . "' ORDER BY tglInsert ASC";
 
-        //         // Assuming ProsesOra4 function is not needed in Laravel, you can directly use the DB::select method
-        //         $results = DB::select($strsql);
+                // Assuming ProsesOra4 function is not needed in Laravel, you can directly use the DB::select method
+                $results = DB::select($strsql);
 
 
 
@@ -571,13 +573,13 @@ class PromosiController extends Controller
                 
                             
 
-        //     $this->DB_PGSQL->commit();
-        // } catch (\Throwable $th) {
+            $this->DB_PGSQL->commit();
+        } catch (\Throwable $th) {
             
-        //     $this->DB_PGSQL->rollBack();
-        //     // dd($th);
-        //     return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
-        // }
+            $this->DB_PGSQL->rollBack();
+            // dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        }
 
 
 

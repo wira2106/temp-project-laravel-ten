@@ -7,7 +7,8 @@ let selectedTable,
     page = 1,
     field = null,
     cabang = null,
-    last_Selving = null;
+    last_Selving = null,
+    first_visit=true;
 var temp_function_deleteAll = null,
     temp_function_viewHasil = null;
 
@@ -37,8 +38,8 @@ $(document).ready(function(){
          }
       });
 
-      $('.input-data').prop('disabled',true);
       $('.list-label').hide();
+      $('.input-data').prop('disabled',true);
       $('.input-form').hide();
       $('.select2').select2({
          allowClear: false
@@ -61,7 +62,10 @@ toggleInput =(nameClass)=>{
    $('.input-data').prop('disabled',true);
    $(className).prop('disabled',false);
    $(className).show();
-   $('.list-label').hide();
+   if (first_visit) {
+      $('.list-label').hide();
+
+   }
 
     listMasterLabel= [];
     search  =  false;
@@ -280,7 +284,7 @@ getDataDivisi =()=>{
 getDataProduk =()=>{
    let select = "";
        listMasterProduk = [];
-   $.getJSON(link + "/api/label/data/produk", function(data) {
+   $.getJSON(link + "/api/label/data/produk?first_visit="+first_visit, function(data) {
 
       // list select cabang
       if(data.data){
@@ -292,7 +296,11 @@ getDataProduk =()=>{
          $("#prdcd").append(select);
       }
 
-   })
+   }).done(function() {
+      if (first_visit) {
+         first_visit = false;
+      }
+   });
 
 }
 getDataLabel =(params = null)=>{
@@ -493,7 +501,6 @@ deleteDataLable=(data = null)=>{
               })
           }
 
-      },
       },
       cache: false,
       contentType: false,

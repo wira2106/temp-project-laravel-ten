@@ -29,10 +29,13 @@ class LabelController extends Controller
     public $unit = [];
     public $barc = [];
     public $LRec = 1;
-        public function __construct(Request $request)
+    public function __construct(Request $request)
     { 
         $this->DB_PGSQL = DB::connection('pgsql');
         $this->get_ip_address($request);
+        if($request->first_visit){
+            $this->cek_delete_data_label($request);
+        }
 
         // try {
         //     $this->DBConnection->beginTransaction();
@@ -191,24 +194,24 @@ class LabelController extends Controller
         
         $data_master_label = $this->DB_PGSQL->table('tblabel_detail_master')
                             ->whereRaw("ipadd = '$this->ip_address'");
-                            if (is_array(json_decode($request->pcrd))){
-                                $prdcd = json_decode($request->pcrd);
-                                $length_array = count($prdcd) -1;
-                                $in_prdcd = "(";
-                                $test =[];
-                                foreach ($prdcd as $key => $value) {
-                                    // $length_array !== $key? : $in_prdcd."'$value')";
-                                    if ($length_array !== $key) {
-                                        $in_prdcd = $in_prdcd."'$value',";
-                                    } else {
-                                        $in_prdcd = $in_prdcd."'$value')";
-                                    }
+                            // if (is_array(json_decode($request->pcrd))){
+                            //     $prdcd = json_decode($request->pcrd);
+                            //     $length_array = count($prdcd) -1;
+                            //     $in_prdcd = "(";
+                            //     $test =[];
+                            //     foreach ($prdcd as $key => $value) {
+                            //         // $length_array !== $key? : $in_prdcd."'$value')";
+                            //         if ($length_array !== $key) {
+                            //             $in_prdcd = $in_prdcd."'$value',";
+                            //         } else {
+                            //             $in_prdcd = $in_prdcd."'$value')";
+                            //         }
                                     
-                                }
-                                $data_master_label = $data_master_label->whereRaw("prdcd in $in_prdcd");
-                            } else {
-                                $data_master_label = $data_master_label->whereRaw("prdcd like '%$request->prdcd%'");
-                            }
+                            //     }
+                            //     $data_master_label = $data_master_label->whereRaw("prdcd in $in_prdcd");
+                            // } else {
+                            //     $data_master_label = $data_master_label->whereRaw("prdcd like '%$request->prdcd%'");
+                            // }
                             
         $data_master_label = $data_master_label->orderBy('tglinsert','desc')
                             ->get();
@@ -223,8 +226,6 @@ class LabelController extends Controller
                 'qty' => 'required',
             ]);
 
-            
-            $this->cek_delete_data_label($request);
 
             try {
                 $this->DB_PGSQL->beginTransaction();
@@ -292,7 +293,7 @@ class LabelController extends Controller
             $results = $this->DB_PGSQL
                             ->table("tbmaster_lokasi")
                             ->selectRaw("
-                                LKS_PRDCD, PRD_DeskripsiPanjang
+                                LKS_PRDCD, PRD_DeskripsiPanjang,LKS_KODERAK
                             ")
                             ->distinct()
                             ->leftJoin("tbmaster_prodmast",function($join){
@@ -317,16 +318,30 @@ class LabelController extends Controller
 
                 // Select records from tbLabel_Detail_Master
                 $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
-                                ->whereRaw("ipadd = '$this->ip_address'")
-                                ->orderBy('tglinsert')
-                                ->get();
-                
-    
-                
+                                 ->whereRaw("ipadd = '$this->ip_address'");
+                if (count($temp_prdcd)){
+                    $prdcd = $temp_prdcd;
+                    $length_array = count($prdcd) -1;
+                    $in_prdcd = "(";
+                    foreach ($prdcd as $key => $value) {
+                        // $length_array !== $key? : $in_prdcd."'$value')";
+                        if ($length_array !== $key) {
+                            $in_prdcd = $in_prdcd."'$value',";
+                        } else {
+                            $in_prdcd = $in_prdcd."'$value')";
+                        }
+                        
+                    }
+                    $dtabOra2 = $dtabOra2->whereRaw("prdcd in $in_prdcd");
+                }
+                $dtabOra2 =  $dtabOra2->orderBy('tglinsert')->get();
+
                 $this->DB_PGSQL->commit();
-                if (count($dtabOra2)) {
+                if (count($dtabOra2) && count($temp_prdcd)) {
                     return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
-                } else {
+                } elseif (count($temp_prdcd)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data PLU'.$in_prdcd.' tidak dapat di tambah'],404);
+                }else{
                     return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
                 }
                 
@@ -380,17 +395,32 @@ class LabelController extends Controller
                 }
 
                 // Select records from tbLabel_Detail_Master
+                
                 $dtabOra2 = $this->DB_PGSQL->table('tblabel_detail_master')
-                                ->whereRaw("ipadd = '$this->ip_address'")
-                                ->orderBy('tglinsert')
-                                ->get();
-                
+                                ->whereRaw("ipadd = '$this->ip_address'");
+                if (count($temp_prdcd)){
+                    $prdcd = $temp_prdcd;
+                    $length_array = count($prdcd) -1;
+                    $in_prdcd = "(";
+                    foreach ($prdcd as $key => $value) {
+                        // $length_array !== $key? : $in_prdcd."'$value')";
+                        if ($length_array !== $key) {
+                            $in_prdcd = $in_prdcd."'$value',";
+                        } else {
+                            $in_prdcd = $in_prdcd."'$value')";
+                        }
+                        
+                    }
+                    $dtabOra2 = $dtabOra2->whereRaw("prdcd in $in_prdcd");
+                }
+                $dtabOra2 =  $dtabOra2->orderBy('tglinsert')->get();
     
-                
                 $this->DB_PGSQL->commit();
-                if (count($dtabOra2)) {
+                if (count($dtabOra2) && count($temp_prdcd)) {
                     return response()->json(['errors'=>false,'messages'=>'Data Berhasil di  Tambah','callback' => $temp_prdcd],200);
-                } else {
+                } elseif (count($temp_prdcd)) {
+                    return response()->json(['errors'=>false,'messages'=>'Data PLU'.$in_prdcd.' tidak dapat di tambah'],404);
+                }else{
                     return response()->json(['errors'=>false,'messages'=>'Data tidak  ditemukan'],404);
                 }
                 
