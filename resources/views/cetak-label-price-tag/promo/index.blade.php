@@ -72,10 +72,11 @@
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="form-group d-flex justify-content-center">
+                                                       <input type="hidden" class="form-control desc" name="desc" value="">
                                                        <input type="hidden" class="form-control multipleForm" name="multipleForm" value="">
                                                        <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
                                                        <input type="hidden" class="form-control" id="runNext" onchange="getDataPromo(this.value)" name="runNext">
-                                                       <button class="btn btn-sm btn-primary"  type="button" onclick="submitByRak(this)"> Insert Ke Database</button>
+                                                       <button class="btn btn-sm btn-primary promo_button"  type="button" onclick="submitByRak(this)" disabled> Insert Ke Database</button>
                                                     </div>
                                                 </div>
                                             </div>

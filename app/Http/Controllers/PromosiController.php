@@ -12,19 +12,30 @@ class PromosiController extends Controller
     use LibraryPDF;
     public $DB_PGSQL;
     public $ip_address;
+    public $dtabOra;
+    public $dtKeluarPromo;
+    public $price_allPromo;
+    public $price_unitPromo;
+    public $jmlLPromo;
+    public $flagPromo;
+    public $unitPromo;
+    public $prodIDPromo;
+    public $kpluPromo;
+    public $pkpPromo;
+    public $LRec;
     public function __construct(Request $request)
     { 
         $this->DB_PGSQL = DB::connection('pgsql');
         $this->get_ip_address($request);
 
         // try {
-        //     $this->DBConnection->beginTransaction();
+        //    $this->DB_PGSQL->beginTransaction();
 
             
-        //     $this->DBConnection->commit();
+        //    $this->DB_PGSQL->commit();
         // } catch (\Throwable $th) {
             
-        //     $this->DBConnection->rollBack();
+        //    $this->DB_PGSQL->rollBack();
         //     dd($th);
         //     return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
         // }
@@ -109,12 +120,163 @@ class PromosiController extends Controller
         $this->validate($request, [
             'qty' => 'required',
         ]);
-        if($request->prdcd == 'all'){
-            $messages = "PRDCD'0036870' : Nilai PRMD_HrgJual Di M_HPROMO Lebih Besar Dari PRD_HrgJual Di TBMASTER_PRODMAST";
-        }else {
-            $messages = "PRDCD '$request->prdcd' Tidak terdaftar";
+
+
+        try {
+           $this->DB_PGSQL->beginTransaction();
+
+                    $dtabOra5 =  $this->DB_PGSQL
+                                    ->table("tbtr_promomd")
+                                    ->leftJoin("tbmaster_prodmast",function($join){
+                                        $join->on("prmd_prdcd" ,"=" ,"prd_prdcd");
+                                    })
+                                    ->selectRaw("
+                                        prmd_prdcd as fmkode,
+                                        prd_deskripsipanjang as desc2,
+                                        min(prmd_hrgjual) as fmjual,
+                                        prmd_tglawal as fmfrtg,
+                                        prmd_tglakhir as fmtotg
+                                    ");
+                 if ($request->prdcd) {
+                    $dtabOra5 = $dtabOra5->whereRaw("PRMD_PRDCD = '" . $request->prdcd. "'");
+                 }
+                if ($request->tgl_awal && $request->tgl_akhir) {
+                    $data_promo =$this->master_promo();
+                    $length_array = count($data_promo) -1;
+                    $in_prdcd = "(";
+                    foreach ($data_promo as $key => $value) {
+                        if ($length_array !== $key) {
+                            $in_prdcd = $in_prdcd."'$value->brg_prdcd',";
+                        } else {
+                            $in_prdcd = $in_prdcd."'$value->brg_prdcd')";
+                        }
+                        
+                    }
+                    $dtabOra5 = $dtabOra5
+                                    ->whereRaw("prmd_prdcd in $in_prdcd");
+                                    // ->whereRaw("DATE_TRUNC('DAY', PRMD_TglAkhir) = TO_DATE('" . date('Y-m-d H:i:s', strtotime($request->tgl_awal)) . "', 'YYYYMMDD') ")
+                                    // ->whereRaw("DATE_TRUNC('DAY', PRMD_TglAkhir) = TO_DATE('" . date('Y-m-d H:i:s', strtotime($request->tgl_akhir)) . "', 'YYYYMMDD') ");
+                }
+                    $dtabOra5 = $dtabOra5
+                                    ->groupBy("prmd_prdcd", "prd_deskripsipanjang", "prmd_tglawal", "prmd_tglakhir")
+                                    ->orderBy("fmkode","asc")
+                                    ->get();
+
+                foreach ($dtabOra5 as $p => $value) {
+                    if (count($dtabOra5) == 0) {
+                        if (empty( $this->dtKeluarPromo)) {
+                            $this->dtKeluarPromo = "* " .$value->fmkode . " - " .$value->desc2 . " (Tidak Terdaftar Di TBTR_PROMOMD)";
+                        } else {
+                            $this->dtKeluarPromo .= "\n* " .$value->fmkode . " - " .$value->desc2 . " (Tidak Terdaftar Di TBTR_PROMOMD)";
+                        }
+                    } else {
+                        $memUnit = "";
+                        $memPRDCD = "";
+                        $promoDiv = "";
+                        $promoDept = "";
+                        $promoKatb = "";
+    
+                        $results = $this->DB_PGSQL
+                                        ->table("tbtr_promomd")
+                                        ->leftJoin("tbmaster_prodmast",function($join){
+                                            $join->on("prmd_prdcd" ,"=" ,"prd_prdcd");
+                                        })
+                                        ->selectRaw("
+                                            prd_prdcd as prdcd, coalesce(prd_kodetag,' ') as ptag, prd_unit as unit,  
+                                            prd_kodedivisi as div , prd_kodedepartement as dept, prd_kodekategoribarang katb,  
+                                            prmd_hrgjual as fmjual, prd_hrgjual price_a  
+                                        ")
+                                        ->whereRaw("SUBSTR(PRMD_PRDCD,1,6) = '" .  substr($value->fmkode, 0, 6). "'")
+                                        ->whereRaw("DATE_TRUNC('DAY', to_date('".date("Y-m-d H:i:s")."','YYYYMMDD')) BETWEEN DATE_TRUNC('DAY', PRMD_TglAwal) AND DATE_TRUNC('DAY', PRMD_TglAkhir)")
+                                        ->whereRaw("PRD_PRDCD IS NOT NULL")
+                                        ->get();
+                                        
+                        foreach ($results as $row) {
+                            if (empty($memUnit) && substr($row->prdcd, -1) == "1") {
+                                if (strtoupper(trim($row->ptag)) != "C" && strtoupper(trim($row->ptag)) != "X" || strtoupper(trim($row->ptag)) != "Z" && strtoupper(trim($row->ptag)) != "Q") {
+                                    $memUnit = $row->unit;
+                                    $memPRDCD = $row->prdcd;
+                                    $promoDiv = $row->div;
+                                    $promoDept = $row->dept;
+                                    $promoKatb = $row->katb;
+                                    break;
+                                }
+                            }
+                        }
+            
+                        foreach ($results as $row) {
+                            if (empty($memUnit) && substr($row->prdcd, -1) == "2") {
+                                if (strtoupper(trim($row->ptag)) != "C" && strtoupper(trim($row->ptag)) != "X" || strtoupper(trim($row->ptag)) != "Z" && strtoupper(trim($row->ptag)) != "Q") {
+                                    $memUnit = $row->unit;
+                                    $memPRDCD = $row->prdcd;
+                                    $promoDiv = $row->div;
+                                    $promoDept = $row->dept;
+                                    $promoKatb = $row->katb;
+                                    break;
+                                }
+                            }
+                        }
+            
+                        foreach ($results as $row) {
+                            if (empty($memUnit) && substr($row->prdcd, -1) == "3") {
+                                if (strtoupper(trim($row->ptag)) != "C" && strtoupper(trim($row->ptag)) != "X" || strtoupper(trim($row->ptag)) != "Z" && strtoupper(trim($row->ptag)) != "Q") {
+                                    $memUnit = $row->unit;
+                                    $memPRDCD = $row->prdcd;
+                                    $promoDiv = $row->div;
+                                    $promoDept = $row->dept;
+                                    $promoKatb = $row->katb;
+                                    break;
+                                }
+                            }
+                        }
+            
+                        foreach ($results as $row) {
+                            if (empty($memUnit) && substr($row->prdcd, -1) == "0") {
+                                if (strtoupper(trim($row->ptag)) != "C" && strtoupper(trim($row->ptag)) != "X" || strtoupper(trim($row->ptag)) != "Z" && strtoupper(trim($row->ptag)) != "Q") {
+                                    $memUnit = $row->unit;
+                                    $memPRDCD = $row->prdcd;
+                                    $promoDiv = $row->div;
+                                    $promoDept = $row->dept;
+                                    $promoKatb = $row->katb;
+                                    break;
+                                }
+                            }
+                        }
+                        if (empty($memUnit)) {
+                            if (empty($this->dtKeluarPromo)) {
+                                $this->dtKeluarPromo = "* " . $value->fmkode . " - " . $value->desc2 . " (Memiliki salah satu tag 'CZXQ')";
+                            } else {
+                                $this->dtKeluarPromo .= "\n* " . $value->fmkode . " - " . $value->desc2 . " (Memiliki salah satu tag 'CZXQ')";
+                            }
+                        } else {
+                            $this->LRec = 1;
+                            for ($i = 0; $i < intval($request->qty); $i++) {
+                                // Assuming you have a function named 'prosesPRDCDviaDBF' for processing
+                                $this->proses_prdcd($value->fmkode, $value->desc2, 1, "manual", $promoDiv, $promoDept, $promoKatb);
+                            }
+                        }
+                    }
+                }               
+
+            
+           $this->DB_PGSQL->commit();
+           
+           return response()->json(['errors'=>false,'messages'=>"Data Berhasil Di proses",'keluar_promo'=>$this->dtKeluarPromo],200); 
+        } catch (\Throwable $th) {
+            
+           $this->DB_PGSQL->rollBack();
+            dd($th);
+            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
         }
-        return response()->json(['errors'=>true,'messages'=>$messages],422);
+
+        // $this->proses_prdcd($request);
+        // dd($request->tgl_awal);
+        // if($request->prdcd == 'all'){
+        //     $messages = "PRDCD'0036870' : Nilai PRMD_HrgJual Di M_HPROMO Lebih Besar Dari PRD_HrgJual Di TBMASTER_PRODMAST";
+        // }else {
+        //     $messages = "PRDCD '$request->prdcd' Tidak terdaftar";
+        // }
+        // return response()->json(['errors'=>true,'messages'=>$messages],422);
     }
 
     public function check_prdcd(Request $request){
@@ -310,7 +472,6 @@ class PromosiController extends Controller
 
     }
     public function insert_prdcd_all(Request $request){
-
         return response()->json(['errors'=>false,'messages'=>"PRDCD '0036870' : Nilai PRMD_HrgJual Di M_HPROMO Lebih Besar Dari PRD_HrgJual Di TBMASTER_PRODMAST"],422);
         try {
             $this->DB_PGSQL->beginTransaction();
@@ -581,6 +742,309 @@ class PromosiController extends Controller
             return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
         }
 
+
+
+    }
+
+    public function proses_prdcd($prdcd = null,$desc = null,$jmlPrint = 1,$tipe = null,$div = null,$dept = null,$katb = null,){
+       
+        // Initialize variables
+        $Awal = '';
+        $Akhir = '';
+        $this->jmlhsPromo = 0;
+
+        $flagPromo = '';
+        $price_aPromo = array_fill(0, 5, 0);
+        $price_allPromo = array_fill(0, 5, 0);
+        $price_unitPromo = array_fill(0, 5, 0);
+        $unitPromo = array_fill(0, 5, '');
+        $jmlLPromo = array_fill(0, 5, '');
+
+        $klikPromo = false;
+        $flagPromo = '';
+
+        // Build the first query
+        $results = $this->DB_PGSQL
+                        ->table('tbmaster_prodmast')
+                        ->join('tbmaster_prodcrm', 'prd_prdcd', '=', 'prc_pluigr')
+                        ->selectRaw("PRD_PRDCD as prdcd, COALESCE(PRC_KodeTag, ' ') as ptag")
+                        ->whereRaw("PRD_PRDCD = PRC_PLUIGR") 
+                        ->whereRaw("SUBSTR(PRD_PRDCD, 1, 6) = '" . substr($prdcd, 0, 6) . "'") 
+                        ->whereRaw("COALESCE(PRC_KodeTag, ' ') NOT IN ('N', 'O', 'H', 'X', 'Q')") 
+                        ->get();
+
+        // Check if the result is not empty
+        if ($results->count() > 0) {
+            $desc .= ' O';
+        }
+        
+        // Build the second query
+        $results = $this->DB_PGSQL->table('tbmaster_prodmast')
+            ->leftJoin('tbtr_promomd', 'prd_prdcd', '=', 'prmd_prdcd')
+            ->leftJoin($this->DB_PGSQL->raw('(SELECT brc_prdcd, MAX(brc_barcode) as barc, NULL as bar2
+                FROM tbmaster_barcode
+                GROUP BY brc_prdcd
+                HAVING COUNT(brc_prdcd) = 1
+                UNION
+                SELECT brc_prdcd, MIN(brc_barcode) as barc, MAX(brc_barcode) as bar2
+                FROM tbmaster_barcode
+                GROUP BY brc_prdcd
+                HAVING COUNT(brc_prdcd) = 2) BRC'), 'brc_prdcd', '=', 'prd_prdcd')
+            ->selectRaw("
+                prd_prdcd as prdcd, prd_plumcg as kplu, brc.barc, brc.bar2,
+                prd_deskripsipanjang as desc2, prd_minjual as minj, prd_frac as frac,
+                prd_unit as unit, coalesce(prd_kodetag, ' ') as ptag,
+                prd_flagbarcode1 as fmbsts, prd_kategoritoko as kttk,
+                prd_kodecabang as kcab, prd_hrgjual as price_a,
+                prd_flagbkp1 as pkp, prd_flagbkp2 as pkp2,
+                prd_kodedivisi as div, prd_kodedepartement as dept, prd_kodekategoribarang as katb,
+                prmd_hrgjual as fmjual, prmd_tglawal as fmfrtg, prmd_tglakhir as fmtotg
+            ")
+            ->whereRaw("SUBSTR(PRD_PRDCD, 1, 6) = '" . substr($prdcd, 0, 6) . "'")
+            ->whereRaw("DATE_TRUNC('DAY', TO_DATE('" . date('Ymd') . "', 'YYYYMMDD')) BETWEEN DATE_TRUNC('DAY', PRMD_TglAwal) AND DATE_TRUNC('DAY', PRMD_TglAkhir)")
+            ->get();
+
+            /**
+             * start 
+             */
+
+            if (count($results)) {
+                $Awal = $results->first()->fmfrtg;
+                $Akhir = $results->first()->fmtotg;
+                $count = $this->DB_PGSQL->table('tbpromo')->insert([
+                    'ipadd' => $this->ip_address,
+                    'prdcd' => substr(trim($prdcd), 0, 6),
+                    'nama' => str_replace("'", "''", trim($desc)),
+                ]);
+                $temp_result = [];
+                foreach ($results as $key => $value) {
+                    $temp_result []= (array)$value;
+                }
+                
+                $this->dtabOra = $temp_result;
+                // substr($row->prdcd, -1) == "0"
+                foreach ($results as $i => $row) {
+                    if (substr($row->prdcd, -1) == "0") {
+                        if ($row->ptag != "Z" && $row->ptag != "X" && $row->ptag != "C" && $row->ptag != "Q") {
+                            if ($row->fmjual >= $row->price_a) {
+                                if (empty($dtKeluarPromo)) {
+                                    $this->dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                } else {
+                                    $this->dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                }
+                                break;
+                            } else {
+                                $this->cek_price($i, $this->jmlhsPromo);
+                                $this->kpluPromo = $row->kplu;
+                                $this->unitPromo[$this->jmlhsPromo] = $row->unit;
+                                if (empty($pkpPromo)) {
+                                    $pkpPromo = $row->pkp . $row->pkp2;
+                                }
+                                $this->prodIDPromo = $prdcd;
+                                $this->jmlhsPromo++;
+                                break;
+                            }
+                        } else {
+                            if (empty($dtKeluarPromo)) {
+                                $dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            } else {
+                                $dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            }
+                            break;
+                        }
+                    }
+                }
+    
+                // substr($row["prdcd"], -1) == "3"
+                $this->jmlhsPromo = 0;
+                foreach ($results as $i => $row) {
+                    if (substr($row->prdcd, -1) == "3") {
+                        if ($row->ptag != "Z" && $row->ptag != "X" && $row->ptag != "C" && $row->ptag != "Q") {
+                            if ($row->kttk == "" && $row->kcab == "") {
+                                // break;
+                            } elseif ($row->fmjual >= $row->price_a) {
+                                if (empty($this->dtKeluarPromo)) {
+                                    $this->dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                } else {
+                                    $this->dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                }
+                                // break;
+                            } else {
+                                $this->cek_price($i, $this->jmlhsPromo);
+                                $this->unitPromo[$this->jmlhsPromo] = $row->unit;
+                                if (!empty($this->prodIDPromo)) {
+                                    $this->prodIDPromo .= "/3";
+                                } else {
+                                    $this->prodIDPromo = $row->prdcd;
+                                }
+                                if (empty($this->$pkpPromo)) {
+                                    $this->pkpPromo = $row->pkp . $row->pkp2;
+                                }
+                                $this->jmlhsPromo++;
+                                // break;
+                            }
+                        } else {
+                            if (empty($this->dtKeluarPromo)) {
+                                $this->dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            } else {
+                                $this->dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            }
+                            // break;
+                        }
+                    }
+                }
+                
+                // substr($row["prdcd"], -1) == "2"
+    
+                $this->jmlhsPromo = 0;
+                foreach ($results as $i => $row) {
+                    if (substr($row->prdcd, -1) == "2") {
+                        if ($row->ptag != "Z" && $row->ptag != "X" && $row->ptag != "C" && $row->ptag != "Q") {
+                            if ($row->kttk == "" && $row->kcab == "") {
+                                // break;
+                            } elseif ($row->fmjual >= $row->price_a) {
+                                if (empty($this->dtKeluarPromo)) {
+                                    $this->dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                } else {
+                                    $this->dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (PRMD_HRGJUAL >= PRDCD_HRGJUAL)";
+                                }
+                                // break;
+                            } else {
+                                $this->cek_price($i, $this->jmlhsPromo);
+                                $this->unitPromo[$this->jmlhsPromo] = $row->unit;
+                                if (!empty($this->prodIDPromo)) {
+                                    $this->prodIDPromo .= "/2";
+                                } else {
+                                    $this->prodIDPromo = $row->prdcd;
+                                }
+                                if (empty($this->pkpPromo)) {
+                                    $this->pkpPromo = $row->pkp . $row->pkp2;
+                                }
+                                $this->jmlhsPromo++;
+                                // break;
+                            }
+                        } else {
+                            if (empty($this->dtKeluarPromo)) {
+                                $this->dtKeluarPromo = "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            } else {
+                                $this->dtKeluarPromo .= PHP_EOL . "* " . $row->prdcd . " - " . trim($desc) . " (TAG '" . $row->ptag . "')";
+                            }
+                            // break;
+                        }
+                    }
+                }
+            }
+
+            // Continue with the rest of your PHP code...
+             /**
+             * End
+             */
+
+            // Check if jmlhsPromo is greater than 3
+            if ($this->jmlhsPromo > 3) {
+                $this->prodIDPromo = str_replace("0/", "", $this->prodIDPromo);
+
+                // Shift array elements for indices 0 to 2
+                for ($i = 0; $i < 2; $i++) {
+                    $this->price_aPromo[$i] = $this->price_aPromo[$i + 1];
+                    $this->price_unitPromo[$i] = $this->price_unitPromo[$i + 1];
+                    $this->price_allPromo[$i] = $this->price_allPromo[$i + 1];
+                    $this->jmlLPromo[$i] = $this->jmlLPromo[$i + 1];
+                    $this->unitPromo[$i] = $this->unitPromo[$i + 1];
+                }
+            }
+
+            $i = 4;
+            while ($i > 0) {
+                if (isset($this->price_allPromo[$i])) {
+                    if ($this->price_allPromo[$i] == $this->price_allPromo[$i - 1] && $this->price_allPromo[$i] != 0 && $this->price_allPromo[$i - 1] != 0) {
+                        $this->price_allPromo[$i] = 0;
+                        $this->price_aPromo[$i] = 0;
+                        $this->price_unitPromo[$i] = 0;
+                        $this->jmlLPromo[$i] = "";
+                        $this->unitPromo[$i] = "";
+                        $this->prodIDPromo = substr($this->prodIDPromo, 0, strrpos($this->prodIDPromo, "/"));
+                    }
+                }
+                $i = $i - 1;
+            }
+
+            // Check if div is 6 in the first row of dtabOra
+            // foreach ($results as $key => $result) {
+                if ($results->first()->div == "6") {
+                    for ($i = 1; $i < 3; $i++) {
+                        $this->price_aPromo[$i] = 0;
+                        $this->price_allPromo[$i] = 0;
+                        $this->price_unitPromo[$i] = 0;
+                        $this->unitPromo[$i] = "";
+                        $this->jmlLPromo[$i] = "";
+                    }
+                }
+            // }
+
+            if ($this->prodIDPromo) {
+                // $LRec = 1;
+                // for ($i = 1; $i < $jmlPrint; $i++) {
+
+                       $this->DB_PGSQL
+                            ->table('tbpromo_detail_master')
+                            ->insert([
+                                'ipadd' => $this->ip_address,
+                                'prdcd' => $this->prodIDPromo ?? null,
+                                'kplu' => $this->kpluPromo ?? null,
+                                'nama1' => mb_substr($desc, 0, 40) ?? null,
+                                'nama2' => mb_substr($desc, 0, 40) ?? null,
+                                'jml1' => $this->jmlLPromo[0] ?? null,
+                                'jml2' => $this->jmlLPromo[1] ?? null,
+                                'jml3' => $this->jmlLPromo[2] ?? null,
+                                'unit1' => $this->unitPromo[0] ?? null,
+                                'unit2' => $this->unitPromo[1] ?? null,
+                                'unit3' => $this->unitPromo[2] ?? null,
+                                'price_all1' => $this->price_allPromo[0] ?? null,
+                                'price_all2' => $this->price_allPromo[1] ?? null,
+                                'price_all3' => $this->price_allPromo[2] ?? null,
+                                'price_unit1' => $this->price_unitPromo[0] ?? null,
+                                'price_unit2' => $this->price_unitPromo[1] ?? null,
+                                'price_unit3' => $this->price_unitPromo[2] ?? null,
+                                'tglawal' => $Awal ? date('Y-m-d H:i:s') : null,
+                                'tglakhir' => $Akhir ? date('Y-m-d H:i:s') : null,
+                                'statusppn' => $this->pkpPromo ?? null,
+                                'tglinsert' => date('Y-m-d H:i:s'),
+                                'lrec' => $this->LRec,
+                                'div' => $div,
+                                'dept' => $dept,
+                                'katb' => $katb,
+                                'prnumber' => 1
+                            ]);
+
+                    $this->LRec += 1;
+                // }
+            }
+
+
+    }
+
+    public function cek_price($x= null , $y = null){
+
+        if (($this->dtabOra[$x]["frac"] > $this->dtabOra[$x]["minj"]) || ($this->dtabOra[$x]["frac"] == $this->dtabOra[$x]["minj"])) {
+            $this->jmlPromo[$y] = (int)$this->dtabOra[$x]["frac"];
+            if ($this->flagPromo != "*") {
+                $this->price_allPromo[$y] = (int)$this->dtabOra[$x]["fmjual"];
+            }
+        } elseif ($this->dtabOra[$x]["frac"] < $this->dtabOra[$x]["minj"]) {
+            $this->jmlPromo[$y] = (int)$this->dtabOra[$x]["minj"];
+            if ($this->flagPromo != "*") {
+                $this->price_allPromo[$y] = (int)$this->dtabOra[$x]["fmjual"] * $this->dtabOra[$x]["minj"];
+            }
+        }
+
+        if (trim($this->dtabOra[$x]["unit"]) == "KG") {
+            $this->price_allPromo[$y] = (int)$this->dtabOra[$x]["fmjual"] * (int)$this->jmlPromo[$y] / 1000;
+            $this->price_unitPromo[$y] = ($this->price_allPromo[$y] / $this->jmlPromo[$y]) * 1000;
+        } else {
+            $this->price_unitPromo[$y] = ($this->price_allPromo[$y] / $this->jmlPromo[$y]) * 1;
+        }
+        $this->jmlLPromo[$y] = "/" . $this->jmlPromo[$y];
 
 
     }

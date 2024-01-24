@@ -128,6 +128,11 @@ changePRDCD=()=>{
               'success'
           )
          //  getDataLabel('');
+         $('.promo_button').prop('disabled',false)
+         response.callback.forEach(function (value){
+            console.log(value,response.callback);
+            $('.desc').val(value.brg_singkatan)
+         });
       },
       error: function (xhr) {
 
