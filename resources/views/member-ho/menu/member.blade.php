@@ -8,7 +8,7 @@
            View Member
         </div>
         <div class="card shadow mb-4">
-            <div class="card-body">
+            <div class="card-body loading-card">
                 <div class="container mt-4">
                     <!-- ============================ -->
                     <!--             Table            -->
@@ -38,7 +38,6 @@
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <div class="d-flex justify-content-start">
-                                <input type="hidden" class="text">
                                 <button onclick="pencarian()" type="button" data-toggle="modal" data-target="#modal_search" class="mr-1 btn btn-lg btn-info">Search</button>
                                 <button onclick="edit()" type="button" data-toggle="modal" data-target="#modal_edit" class="mr-1 btn btn-lg btn-default tombol_edit">Edit</button> 
                                 <button onclick="reset_selected()" type="button" class="mr-1 btn btn-lg btn-danger tombol_reset">Reset</button> 
@@ -46,7 +45,6 @@
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-end">
-                                <input type="hidden" class="text">
                                 <button onclick="alokasi(this)" type="button" class="mr-1 btn btn-lg btn-info"  data-toggle="modal" data-target="#modal_alokasi" >Alokasi</button>
                             </div>
                         </div>
@@ -78,16 +76,33 @@
                                     <!-- Modal Form Perhitungan             -->
                                     <!-- ================================== -->
 
-                                    <form action="" method="post" class="form_data">
+                                    <form action="{{url('/api/member/alokasi')}}" method="post" class="form_data">
                                         @csrf
                                                 <div class="row pt-md-4">
                                                     <div class="col-md-12">
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Cabang</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="cabang">
+                                                                <div class="form-group">
+                                                                    <select value=""  class="form-control kode_cabang" name="kode_cabang">
+                                                                        <option value="" disabled selected>Pilih Cabang</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
+                                                                <!-- <input type="text" class="form-control form-control-sm kode_cabang"  name="kode_cabang"> -->
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <div class="form-groups">
+                                                            <input type="checkbox" class="" id="member_merah"  name="member_merah">
+                                                            <label for="member_merah" class="col-sm-8">Member Merah</label>
+                                                            
                                                         </div>
                                                     </div>
                                                 </div>
@@ -96,7 +111,7 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Jumlah Alokasi</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="kota">
+                                                                <input type="text" class="form-control form-control-sm"  name="jumlah_alokasi">
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -104,6 +119,8 @@
                                                 </div>
                                                 <!-- Button Submit -->
                                                 <div class="d-flex justify-content-center mt-3">
+
+                                                    <input type="hidden" class="form-control form-control-sm text"  name="text" value="Anda Yakin Mua melakukan Alokasi Member Baru">
                                                     <button class="btn btn-info px-4" type="submit">ALOKASI</button>
                                                     <!-- <button class="btn btn-danger mr-2" data-dismiss="modal" type="button">Cancel</button> -->
                                                 </div>
@@ -153,7 +170,7 @@
                                                     <div class="col-md-12">
                                                         <div class="form-group">
                                                             <p class="font-weight-light">Masukan Nama/ Kode yang ingin dicari</p>
-                                                            <input type="text" class="form-control form-control-sm" placeholder="Nama / Kode" id="datepicker" name="search" value=""/>
+                                                            <input type="text" class="form-control form-control-sm" placeholder="Nama / Kode" id="search" name="search" value=""/>
                                                             <div class="search">
                                                             </div>
                                                         </div>
@@ -161,7 +178,7 @@
                                                 </div>
                                                 <!-- Button Submit -->
                                                 <div class="d-flex justify-content-end">
-                                                    <button class="btn btn-info px-4" type="submit">OK</button>
+                                                    <button class="btn btn-info px-4" type="button" onclick="view($('#search').val(),1)">OK</button>
                                                     <button class="btn btn-danger mr-2" data-dismiss="modal" type="button">Cancel</button>
                                                 </div>
 
@@ -201,7 +218,7 @@
                                     </div>
                                 
                                     <!-- ================================== -->
-                                    <!-- Modal Form Perhitungan             -->
+                                    <!-- Modal Form                         -->
                                     <!-- ================================== -->
 
                                     <form action="" method="post" class="form_data">
@@ -211,12 +228,12 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Kode Cabang</label>
                                                             <div class="col-sm-8">
-                                                            <div class="form-group">
-                                                                <select id="kode_cabang" class="form-control select2" name="kode_cabang">
-                                                                    <option value="" disabled selected>Pilih Cabang</option>
-                                                                
-                                                                </select>
-                                                            </div>
+                                                                <div class="form-group">
+                                                                    <select value="" id="kode_cabang" class="form-control" name="kode_cabang">
+                                                                        <option value="" disabled selected>Pilih Cabang</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -236,7 +253,7 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Kode Member</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="kode_member">
+                                                                <input type="text" class="form-control form-control-sm"  name="kode_member" readonly style="background-color: #eaecf4;">
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -329,8 +346,13 @@
                                                     <div class="col-md-6">
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Jenis Outlet</label>
-                                                            <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="jenis_outlet">
+                                                            <div class="col-sm-8">    
+                                                                <div class="form-group">
+                                                                    <select value="" id="jenis_outlet" class="form-control" name="jenis_outlet">
+                                                                        <option value="" disabled selected>Pilih Outlet</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -350,7 +372,12 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">SubOutlet</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="sub_outlet">
+                                                                <div class="form-group">
+                                                                    <select value="" id="sub_outlet" class="form-control" name="sub_outlet">
+                                                                        <option value="" disabled selected>Pilih SubOutlet</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -370,7 +397,14 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">PKP</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="pkp">
+                                                                <div class="form-group">
+                                                                    <select value="" id="pkp" class="form-control" name="pkp">
+                                                                        <option value="" disabled selected>Pilih PKP</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                             <label for="alasan_baru" class="col-sm-4">Area</label>
@@ -396,6 +430,15 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Kredit</label>
                                                             <div class="col-sm-8">
+
+                                                                <div class="form-group">
+                                                                    <select value="" id="kredit" class="form-control" name="kredit">
+                                                                        <option value="" disabled selected>Pilih Kredit</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <input type="text" class="form-control form-control-sm"  name="kredit">
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
@@ -413,7 +456,13 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Jenis Cust</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="jenis_cust">
+                                                                <div class="form-group">
+                                                                    <select value="" id="jenis_cust" class="form-control" name="jenis_cust">
+                                                                        <option value="" disabled selected>Pilih Jenis Cust</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
+                                                                
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -422,7 +471,15 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Bebas Iuran</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="bebas_iuran">
+
+                                                                <div class="form-group">
+                                                                    <select value="" id="bebas_iuran" class="form-control" name="bebas_iuran">
+                                                                        <option value="" disabled selected>Pilih Bebas_Iuran</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -434,7 +491,15 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Retail Khusus</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="retail_khusus">
+
+                                                                <div class="form-group">
+                                                                    <select value="" id="retail_khusus" class="form-control" name="retail_khusus">
+                                                                        <option value="" disabled selected>Pilih Retail_Khusus</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -443,6 +508,15 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Ganti Kartu</label>
                                                             <div class="col-sm-8">
+
+                                                                <div class="form-group">
+                                                                    <select value="" id="ganti_kartu" class="form-control" name="ganti_kartu">
+                                                                        <option value="" disabled selected>Pilih Ganti_Kartu</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <input type="text" class="form-control form-control-sm"  name="ganti_kartu">
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
@@ -485,7 +559,14 @@
                                                         <div class="form-groups row">
                                                             <label for="alasan_baru" class="col-sm-4">Blocking Pengiriman</label>
                                                             <div class="col-sm-8">
-                                                                <input type="text" class="form-control form-control-sm"  name="blocking_pengiriman">
+                                                                <div class="form-group">
+                                                                    <select value="" id="blocking_pengiriman" class="form-control" name="blocking_pengiriman">
+                                                                        <option value="" disabled selected>Pilih Blocking_Pengiriman</option>
+                                                                        <option value="Y">Yes</option>
+                                                                        <option value="T">No</option>
+                                                                    
+                                                                    </select>
+                                                                </div>
                                                                 <!-- <small id="error_alasan_baru" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                                                             </div>
                                                         </div>
@@ -517,13 +598,16 @@
                                                 </div>
                                                 <!-- Button Submit -->
                                                 <div class="d-flex justify-content-end mt-2">
+
+                                                    <input type="hidden" name="multipleForm" id="multipleForm" value="1">
+                                                    <input type="hidden" name="runNext1" id="runNext1" onchange="view(null,1)">
                                                     <button class="btn btn-info px-4" type="submit">Save</button>
                                                     <button class="btn btn-danger mr-2" data-dismiss="modal" type="button">Cancel</button>
                                                 </div>
 
                                     </form>
                                     <!-- ================================== -->
-                                    <!-- End Modal Form Perhitungan         -->
+                                    <!-- End Modal Form                     -->
                                     <!-- ================================== -->
 
                                 </div>

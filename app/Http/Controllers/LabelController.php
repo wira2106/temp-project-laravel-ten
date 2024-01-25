@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\LibraryCSV;
 use App\Traits\LibraryPDF;
 use App\Transformers\DataMasterProdukTransformers;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use DB;
 class LabelController extends Controller
 {
     use LibraryPDF;
+    use LibraryCSV;
     public $DB_PGSQL;
     public function __construct()
     { 
@@ -52,7 +54,8 @@ class LabelController extends Controller
     }
 
     public function cetak(){
-        return view('template-print.print');
+        return $this->download_csv('/var/www/html/storage/csv/2009021701_GSM.CSV');
+        // return view('template-print.print');
         // return $this->printPDF();
     }
 }

@@ -22,26 +22,28 @@ Route::get('/', function () {
     // dd(phpinfo());
     return view('member-ho.menu.member');
 });
-Route::get('/member/list', function () {
-    // dd(Session::get('token'));
-    return view('member-ho.menu.member');
-});
-Route::get('/member/sms', function () {
-    // dd(Session::get('token'));
-    return view('member-ho.menu.sms');
-});
 
-Route::get('/member/data', [MemberController::class, 'index']);
-Route::get('/api/member/data', [MemberController::class, 'view']);
-Route::get('/api/member/sms/data', [SMSController::class, 'view']);
 //LOGIN
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::get('/logout', [LoginController::class, 'logout']);
+// Route::get('/member/data', [MemberController::class, 'index']);
+Route::get('/api/member/data', [MemberController::class, 'view']);
+Route::get('/api/select/data', [MemberController::class, 'get_data_select']);
+Route::post('/api/member/edit', [MemberController::class, 'update']);
+Route::post('/api/member/alokasi', [MemberController::class, 'alokasi']);
+Route::get('/api/member/sms/data', [SMSController::class, 'view']);
+Route::get('/api/member/sms/all', [SMSController::class, 'all_data_sms']);
+Route::post('/api/proses/csv', [SMSController::class, 'proses_csv']);
+Route::post('/api/add', [SMSController::class, 'add']);
+Route::post('/api/update', [SMSController::class, 'update']);
+Route::delete('/api/remove/{kode}', [SMSController::class, 'remove']);
 
+Route::get('home', [MemberController::class, 'index']);
+Route::get('sms', [SMSController::class, 'index']);
+Route::get('download_csv', [SMSController::class, 'execute_download']);
 Route::middleware(['mylogin'])->group(function () {
     //HOME
-    Route::get('home', [LabelController::class, 'index']);
     Route::get('cetak', [LabelController::class, 'cetak']);
     Route::post('get-user', [HomeController::class, 'getUser']);
     Route::post('insert-user', [HomeController::class, 'insertUser']);

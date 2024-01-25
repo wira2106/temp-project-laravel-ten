@@ -20,4 +20,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::get('/label/data/produk', [LabelController::class, 'data_master']);
+// Route::get('/label/data/produk', [LabelController::class, 'data_master']);
+

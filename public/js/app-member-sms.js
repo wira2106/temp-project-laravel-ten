@@ -3,6 +3,7 @@ let selectedTable,
     dataSms =[],
     search  =  false,
     page = 1,
+    firs_visit  =  true,
     field = null;
 
 $(document).ready(function(){
@@ -10,6 +11,8 @@ $(document).ready(function(){
    $('.tombol_edit').prop('disabled',true);
    $('.tombol_hapus').prop('disabled',true);
    $('.tombol_reset').hide();
+
+   $('.select2').select2(); 
    view();
    
    $('#table_cabang tbody').on('click', 'tr', function () {
@@ -24,8 +27,9 @@ $(document).ready(function(){
         selectedTable = $(this).find('td').map(function (data) {
             return $(this).text();
         }).get();
+      //   console.log(selectedTable)
         
-        selectedValue(selectedTable[1]);
+        selectedValue(selectedTable[2]);
         $('.tombol_edit').prop('disabled',false);
         $('.tombol_hapus').prop('disabled',false);
         $('.tombol_reset').show();
@@ -34,19 +38,34 @@ $(document).ready(function(){
 
     $('#scrollContainer').on('scroll', function () {
       var container = $(this);
-      if (container.scrollTop() + container.innerHeight() >= container[0].scrollHeight) {
+      if (container.scrollTop() + container.innerHeight() +1 >= container[0].scrollHeight) {
         // Load more data when scrolled to the bottom
         view();
       }
     });
 });
 
-view =(search = null)=>{
+view =(search = null, set_page =null)=>{
    reset_selected();
-   $.getJSON(link + "/api/member/sms/data?search"+search+"&page="+page, function(data) {
+   if (firs_visit) {
+      get_data_select();
+      firs_visit = false;
+   }
+   if(set_page){
+      page = set_page;
+      dataSms = [];
+      field = '';
+      $("#table-content").html(field)
+      $('#modal_csv').modal('hide');
+      $('#modal_edit').modal('hide');
+   }
+
+   $('.loading-card').loading('toggle');
+   $.getJSON(link + "/api/member/sms/data?search="+search+"&page="+page, function(data) {
       $.each(data.data,function(key,value) {
          field+=`
                   <tr>
+                        <td style="display:none;">${value.kode_cabang}</td>
                         <td scope="row">${value.cabang}</td>
                         <td>${value.kode}</td>
                         <td>${value.nama_sms}</td>
@@ -54,71 +73,111 @@ view =(search = null)=>{
                         <td>${value.akhir_tgl}</td>
                   </tr>
                `;
-               dataSms[value.kode_cabang] = value;
+               dataSms[value.kode] = value;
       });
    }).done(function() {
+
+      $('.loading-card').loading('toggle');
       $("#table-content").html(field);
       page++
-      console.log(dataSms);
    }); 
 
 }
 
 edit =()=>{
       let data = selectedData;
+
+      console.log(data);
       
-      $('#form_data').attr('action',link+'/api/add');
-      $("input[name='kode_cabang']").val(data.kode_cabang)
-      $("input[name='alamat_surat']").val(data.alamat_surat)
-      $("input[name='kode_member']").val(data.kode_member)
-      $("input[name='kota']").val(data.kota)
-      $("input[name='nama']").val(data.nama)
-      $("input[name='kelurahan']").val(data.kelurahan)
-      $("input[name='no_ktp']").val(data.no_ktp)
-      $("input[name='kode_pos']").val(data.kode_pos)
-      $("input[name='alamat_ktp']").val(data.alamat_ktp)
-      $("input[name='no_hp']").val(data.no_hp)
-      $("input[name='tgl_lahir']").val(data.tgl_lahir)
-      $("input[name='kota_ktp']").val(data.kota_ktp)
-      $("input[name='jenis_outlet']").val(data.jenis_outlet)
-      $("input[name='kelurahan_ktp']").val(data.kelurahan_ktp)
-      $("input[name='sub_outlet']").val(data.sub_outlet)
-      $("input[name='kode_pos_ktp']").val(data.kode_pos_ktp)
-      $("input[name='pkp']").val(data.pkp)
-      $("input[name='area']").val(data.area)
-      $("input[name='telepon']").val(data.telepon)
-      $("input[name='kredit']").val(data.kredit)
-      $("input[name='top']").val(data.top)
-      $("input[name='jenis_cust']").val(data.jenis_cust)
-      $("input[name='bebas_iuran']").val(data.bebas_iuran)
-      $("input[name='retail_khusus']").val(data.retail_khusus)
-      $("input[name='ganti_kartu']").val(data.ganti_kartu)
-      $("input[name='jarak']").val(data.jarak)
-      $("input[name='limit']").val(data.limit)
-      $("input[name='npwp']").val(data.npwp)
-      $("input[name='blocking_pengiriman']").val(data.blocking_pengiriman)
-      $("input[name='salesman']").val(data.salesman)
-      $("input[name='alamat_email']").val(data.alamat_email)
+      $("input[name='kode']").prop('disabled',true)
+      $("select[name='cabang']").val(data.kode_cabang)
+      $("input[name='kode']").val(data.kode)
+      $("input[name='awal_tgl']").val(data.awal_tgl)
+      $("input[name='akhir_tgl']").val(data.akhir_tgl)
+      $("input[name='nama_sms']").val(data.nama_sms)
+
+      $('#form_data').attr('action',link+'/api/update');
+}
+
+tambah=()=>{
+   $('#form_data').attr('action',link+'/api/add');
+}
+get_data_select=()=>{
+   let select = "",
+       select_outlet = "",
+       select_suboutlet = "",
+       select_sms = "",
+       select_jenis_member = "",
+       listkodesms = [],
+       listCabang = [],
+       listoutlet = [],
+       listsuboutlet = [],
+       listjenis_member = [];
+   $.getJSON(link + "/api/select/data?", function(data) {
+      // list select cabang
+      if(data.cabang){
+         $.each(data.cabang,function(key,value){
+             select+=` <option value="${value.id}" >${value.cabang}</option>`;
+             listCabang[value.id] = value;
+
+         });
+         $.each(data.outlet,function(key,value){
+             select_outlet+=` <option value="${value.id}" >${value.outlet}</option>`;
+             listoutlet[value.id] = value;
+
+         });
+         // $.each(data.suboutlet,function(key,value){
+         //    select_suboutlet+=` <option value="${value.id}" >${value.suboutlet}</option>`;
+         //    listsuboutlet[value.id] = value;
+
+         // });
+         $.each(data.jenis_member,function(key,value){
+            select_jenis_member+=` <option value="${value.id}" >${value.jenis_member}</option>`;
+             listjenis_member[value.id] = value;
+
+         });
+      }
+      // $("#kode_cabang").append(select);
+      $(".kode_cabang").append(select);
+      $(".outlet").append(select_outlet);
+      // $("#sub_outlet").append(select_suboutlet);
+      $(".member").append(select_jenis_member);
+   })
+   $.getJSON(link + "/api/member/sms/all?", function(data) {
+      // list select cabang
+      if(data.data){
+         $.each(data.data,function(key,value){
+            select_sms+=` <option value="${value.sms_kodemonitoring}" >(${value.sms_kodemonitoring})- ${value.sms_namasms}</option>`;
+             listkodesms[value.id] = value;
+         });
+      }
+      // $("#kode_cabang").append(select);
+      $(".kode_monitoring").append(select_sms);
+   })
 }
 
 add =(data)=>{
-   $('#form_data').attr('action',link+'/api/add');
-   $('.text').val('Tambah')
+   $('.text').val('Anda yakin untuk Menambah Data ini?')
    $('#form_data').submit();
 }
 
 update =(data)=>{
-   $('#form_data').attr('action',link+'/api/update');
-   $('.text').val('Edit')
+   $('.text').val('Anda yakin untuk Mengubah Data ini?')
    $('#form_data').submit();
+}
+remove =(data)=>{
+   // $('#form_data').attr('action',link+'/api/remov/'+data.kode);
+   $('.text').val('Anda yakin untuk Hapus Data ini?')
+   hapus(selectedData.kode,'api/remove')
+   // $('#form_data').submit();
 }
 
 pencarian=()=>{
    reset_selected();
 }
 
-selectedValue =(kode_member)=>{
-   selectedData  = dataSms[kode_member];
+selectedValue =(kode)=>{
+   selectedData  = dataSms[kode];
 }
 
 reset_selected=()=>{
