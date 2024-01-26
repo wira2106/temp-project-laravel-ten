@@ -60,8 +60,8 @@ trait LibraryCSV
             $fullPath = $full_path;
         }else{
             // if datas null ,and column header null
-            if (!(count($datas)) && !(count($columnHeader)) {
-                $columnHeader = ["Data Tidak Ditemukan"]
+            if (!(count($datas)) && !(count($columnHeader))) {
+                $columnHeader = ["Data Tidak Ditemukan"];
             }
             $fullPath =$this->make_csv($datas,$filename,$storage_path,$columnHeader);
         }
@@ -95,11 +95,11 @@ trait LibraryCSV
         // ========================================================
 
         // if datas null ,and column header null
-        if (!(count($datas)) && !(count($columnHeader)) {
-            $columnHeader = ["Data Tidak Ditemukan"]
+        if(!count($datas) && !count($columnHeader)){
+            $columnHeader = ["Data Tidak Ditemukan"];
         }
         // if column header null , column header defined by index data from variable datas
-        if (!(count($columnHeader))) {
+        if(!count($columnHeader)){
             foreach ($datas[0] as $key => $value) {
                 $columnHeader[]= $key;
             }

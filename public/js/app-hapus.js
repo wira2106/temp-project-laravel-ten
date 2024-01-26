@@ -29,14 +29,24 @@ hapus = (id,url) => {
                     view();
                 },
                 error: function (xhr) {
+                    let res = xhr.responseJSON,
+                    messages = xhr.responseJSON.messages?xhr.responseJSON.messages:'Harap Periksa kembali data yang anda input';
+                    
                     Swal.fire({
-                        title: 'Loading..',
-                        html: '',
+                        title: 'Gagal',
+                        html: messages,
+                        icon: 'warning',
                         allowOutsideClick: false,
                         onOpen: () => {
-                                swal.showLoading()
+                                swal.hideLoading()
                         }
-                    })
+                    });
+                    if ($.isEmptyObject(res) == false) {
+                        $.each(res.errors, function (i, value) {
+                            $('#' + i).addClass('is-invalid');
+                            $('.' + i).append('<span class="help-block"><strong>' + value + '</strong></span>')
+                        })
+                    }
                 }
             });
         }
