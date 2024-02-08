@@ -4,13 +4,13 @@ namespace App\Transformers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DataMasterProdukTransformers extends JsonResource
+class DataZonaTransformers extends JsonResource
 {
     public function toArray($request)
     {    
         return [
-           "prdcd" => $this->prdcd,
-           "deskripsi" => $this->deskripsi,
+           "zona" => $this->zona,
+           "toko" => $this->toko,
         ];
     }
 }

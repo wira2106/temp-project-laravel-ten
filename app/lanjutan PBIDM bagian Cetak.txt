@@ -1,0 +1,2707 @@
+
+    Private Sub CetakALL(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        Dim dtListOrder As New DataSet1.ListOrderDataTable
+        Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        Dim rptListOrder As New rptListingTransferOrder
+        Dim rptRekap As New rptRekapOrder
+        Dim rptKarton As New rptKartonNonDPD
+        Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+        Dim rptKertas As New rptJalurCetakKertas
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        f = "LIST ORDER PB"
+
+        '--------------'
+        '+ 24-06-2013 +'
+        '--------------'
+        sb = New StringBuilder
+        sb.AppendLine("Select coalesce(COUNT(1),0)  ")
+        sb.AppendLine("  From information_schema.columns ")
+        sb.AppendLine(" Where UPPER(table_name) = 'TBMASTER_MARGINPLUIDM' ")
+
+        If cn.State = ConnectionState.Closed Then cn.Open()
+        cmd.CommandText = sb.ToString
+        jum = cmd.ExecuteScalar.ToString
+
+        If jum > 0 Then
+            ''--++ 24-03-2014
+            'sb = New StringBuilder
+            'sb.AppendLine("INSERT INTO PBIDM_LISTORDER ")
+            'sb.AppendLine("  ( ")
+            'sb.AppendLine("  PBL_KODETOKO, ")
+            'sb.AppendLine("  PBL_NOPB, ")
+            'sb.AppendLine("  PBL_TGLPB, ")
+            'sb.AppendLine("  PBL_PLU, ")
+            'sb.AppendLine("  PBL_DESKRIPSI, ")
+            'sb.AppendLine("  PBL_UNIT, ")
+            'sb.AppendLine("  PBL_QTYB, ")
+            'sb.AppendLine("  PBL_QTYK, ")
+            'sb.AppendLine("  PBL_QTYO, ")
+            'sb.AppendLine("  PBL_HRGSATUAN, ")
+            'sb.AppendLine("  PBL_NILAI, ")
+            'sb.AppendLine("  PBL_PPN, ")
+            'sb.AppendLine("  PBL_TOTAL, ")
+            'sb.AppendLine("  PBL_CREATE_BY, ")
+            'sb.AppendLine("  PBL_CREATE_DT ")
+            'sb.AppendLine("  ) ")
+            'sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            'sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            'sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB,  ")
+            'sb.AppendLine("       plukarton as plu,  ")
+            'sb.AppendLine("       desk,  ")
+            'sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            'sb.AppendLine("       qtyb as qty, ")
+            'sb.AppendLine("       qtyk as frc,  ")
+            'sb.AppendLine("       fdqtyb as inpcs,  ")
+            'sb.AppendLine("       Round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Harga, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Nilai, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END) as TOTAL, ")
+            'sb.AppendLine("       '" & UserID & "', ")
+            'sb.AppendLine("       CURRENT_DATE ")
+            'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_MarginPLUIDM ")
+            'sb.AppendLine(" Where req_id = '" & IP & "' ")
+            'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            'sb.AppendLine("   and prd_prdcd = plukarton ")
+            'sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")            
+
+            'ExecQRY(sb.ToString, "INSERT INTO PBIDM_LISTORDER")
+            ''---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            sb.AppendLine(" Order By plukarton ")
+        Else
+            ''--++ 24-03-2014
+            'sb = New StringBuilder
+            'sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            'sb.AppendLine("  ( ")
+            'sb.AppendLine("  PBL_KODETOKO, ")
+            'sb.AppendLine("  PBL_NOPB, ")
+            'sb.AppendLine("  PBL_TGLPB, ")
+            'sb.AppendLine("  PBL_PLU, ")
+            'sb.AppendLine("  PBL_DESKRIPSI, ")
+            'sb.AppendLine("  PBL_UNIT, ")
+            'sb.AppendLine("  PBL_QTYB, ")
+            'sb.AppendLine("  PBL_QTYK, ")
+            'sb.AppendLine("  PBL_QTYO, ")
+            'sb.AppendLine("  PBL_HRGSATUAN, ")
+            'sb.AppendLine("  PBL_NILAI, ")
+            'sb.AppendLine("  PBL_PPN, ")
+            'sb.AppendLine("  PBL_TOTAL, ")
+            'sb.AppendLine("  PBL_CREATE_BY, ")
+            'sb.AppendLine("  PBL_CREATE_DT ")
+            'sb.AppendLine("  ) ")
+            'sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            'sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            'sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB,  ")
+            'sb.AppendLine("       plukarton as plu,  ")
+            'sb.AppendLine("       desk,  ")
+            'sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            'sb.AppendLine("       qtyb as qty, ")
+            'sb.AppendLine("       qtyk as frc,  ")
+            'sb.AppendLine("       fdqtyb as inpcs,  ")
+            'sb.AppendLine("       Round(avgcost * (1+ " & PersenMargin & ")) as Harga, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) as Nilai, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END) as TOTAL, ")
+            'sb.AppendLine("       '" & UserID & "', ")
+            'sb.AppendLine("       CURRENT_DATE ")
+            'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast ")
+            'sb.AppendLine(" Where req_id = '" & IP & "' ")
+            'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            'sb.AppendLine("   and prd_prdcd = plukarton ")
+
+            'ExecQRY(sb.ToString, "INSERT INTO PBIDM_LISTORDER")
+            ''---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+ " & PersenMargin & ")) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine(" Order By plukarton ")
+        End If
+
+        'sb = New StringBuilder
+        'sb.AppendLine("Select plukarton as plu,  ")
+        'sb.AppendLine("       desk,  ")
+        'sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+        'sb.AppendLine("       qtyb as qty, ")
+        'sb.AppendLine("       qtyk as frc,  ")
+        'sb.AppendLine("       fdqtyb as inpcs,  ")
+        'sb.AppendLine("       Round(avgcost * (1+ " & PersenMargin & ")) as Harga, ")
+        'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) as Nilai, ")
+        'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+        'sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END) as TOTAL ")
+        'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast ")
+        'sb.AppendLine(" Where req_id = '" & IP & "' ")
+        'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+        'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+        'sb.AppendLine("   and prd_prdcd = plukarton ")
+        'sb.AppendLine(" Order By plukarton ")
+        '--------------'
+        '- 24-06-2013 -'
+        '--------------'
+
+        IsiDT(sb.ToString, dtListOrder, "ISI dtListOrder", 1)
+
+        ds.ListOrder.Clear()
+        ds.ListOrder.Merge(dtListOrder)
+
+        rptListOrder.SetDataSource(ds)
+        rptListOrder.SetParameterValue("NamaCabang", NamaCab)
+        rptListOrder.SetParameterValue("NamaToko", NamaToko)
+        rptListOrder.SetParameterValue("KodeToko", KodeToko)
+        rptListOrder.SetParameterValue("Nopb", noPB)
+        rptListOrder.SetParameterValue("Tglpb", tglPB)
+
+        'rpt.PrintToPrinter(1, True, 1, 1)
+        'rpt.Dispose()
+
+        'frmViewer.crv.ReportSource = rpt
+        'frmViewer.Show()
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptListOrder.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptListOrder.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptListOrder.Export()
+            rptListOrder.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        f = "REKAP ORDER PB"
+        '--------------'
+        '+ 24-06-2013 +'
+        '--------------'
+        sb = New StringBuilder
+        sb.AppendLine("Select coalesce(COUNT(1),0)  ")
+        sb.AppendLine("  From information_schema.columns ")
+        sb.AppendLine(" Where UPPER(table_name) = 'TBMASTER_MARGINPLUIDM' ")
+
+        If cn.State = ConnectionState.Closed Then cn.Open()
+        cmd.CommandText = sb.ToString
+        jum = cmd.ExecuteScalar.ToString
+
+        If jum > 0 Then
+            ''--++ 24-03-2014
+            'sb = New StringBuilder
+            'sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            'sb.AppendLine("  ( ")
+            'sb.AppendLine("  PBR_KODETOKO, ")
+            'sb.AppendLine("  PBR_NOPB, ")
+            'sb.AppendLine("  PBR_TGLPB, ")
+            'sb.AppendLine("  PBR_NAMADIVISI, ")
+            'sb.AppendLine("  PBR_KODEDIVISI, ")
+            'sb.AppendLine("  PBL_ITEM, ")
+            'sb.AppendLine("  PBL_NILAI, ")
+            'sb.AppendLine("  PBL_PPN, ")
+            'sb.AppendLine("  PBL_SUBTOTAL, ")
+            'sb.AppendLine("  PBL_CREATE_BY, ")
+            'sb.AppendLine("  PBL_CREATE_DT ")
+            'sb.AppendLine("  ) ")
+            'sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            'sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            'sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB, ")
+            'sb.AppendLine("       DIV_NamaDivisi as NamaDivisi, ")
+            'sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            'sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)))) as Nilai, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END))) as SUBTOTAL, ")
+            'sb.AppendLine("       '" & UserID & "', ")
+            'sb.AppendLine("       CURRENT_DATE ")
+            'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi, tbMaster_MarginPLUIDM ")
+            'sb.AppendLine(" Where req_id = '" & IP & "' ")
+            'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            'sb.AppendLine("   and prd_prdcd = plukarton ")
+            'sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            'sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            'sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            'sb.AppendLine("          PRD_KodeDivisi ")
+
+            'ExecQRY(sb.ToString, "INSERT INTO PBIDM_REKAPORDER")
+            ''---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+            sb.AppendLine(" Order By PRD_KodeDivisi ")
+        Else
+            ''--++ 24-03-2014
+            'sb = New StringBuilder
+            'sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            'sb.AppendLine("  ( ")
+            'sb.AppendLine("  PBR_KODETOKO, ")
+            'sb.AppendLine("  PBR_NOPB, ")
+            'sb.AppendLine("  PBR_TGLPB, ")
+            'sb.AppendLine("  PBR_NAMADIVISI, ")
+            'sb.AppendLine("  PBR_KODEDIVISI, ")
+            'sb.AppendLine("  PBL_ITEM, ")
+            'sb.AppendLine("  PBL_NILAI, ")
+            'sb.AppendLine("  PBL_PPN, ")
+            'sb.AppendLine("  PBL_SUBTOTAL, ")
+            'sb.AppendLine("  PBL_CREATE_BY, ")
+            'sb.AppendLine("  PBL_CREATE_DT ")
+            'sb.AppendLine("  ) ")
+            'sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            'sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            'sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB, ")
+            'sb.AppendLine("       DIV_NamaDivisi as NamaDivisi, ")
+            'sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            'sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END))) as SUBTOTAL, ")
+            'sb.AppendLine("       '" & UserID & "', ")
+            'sb.AppendLine("       CURRENT_DATE ")
+            'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+            'sb.AppendLine(" Where req_id = '" & IP & "' ")
+            'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            'sb.AppendLine("   and prd_prdcd = plukarton ")
+            'sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            'sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            'sb.AppendLine("          PRD_KodeDivisi ")
+
+            'ExecQRY(sb.ToString, "INSERT INTO PBIDM_REKAPORDER")
+            ''---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+            sb.AppendLine(" Order By PRD_KodeDivisi ")
+        End If
+
+        'sb = New StringBuilder
+        'sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+        'sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+        'sb.AppendLine("       Count(PLUKARTON) as Item, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END))) as SUBTOTAL ")
+        'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+        'sb.AppendLine(" Where req_id = '" & IP & "' ")
+        'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+        'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+        'sb.AppendLine("   and prd_prdcd = plukarton ")
+        'sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+        'sb.AppendLine(" Group By DIV_NamaDivisi, ")
+        'sb.AppendLine("          PRD_KodeDivisi ")
+        'sb.AppendLine(" Order By PRD_KodeDivisi ")
+        '--------------'
+        '- 24-06-2013 -'
+        '--------------'
+
+        IsiDT(sb.ToString, dtRekapOrder, "ISI dtRekapOrder", 2)
+
+        ds.RekapOrder.Clear()
+        ds.RekapOrder.Merge(dtRekapOrder)
+
+        rptRekap.SetDataSource(ds)
+        rptRekap.SetParameterValue("NamaCabang", NamaCab)
+        rptRekap.SetParameterValue("NamaToko", NamaToko)
+        rptRekap.SetParameterValue("KodeToko", KodeToko)
+        rptRekap.SetParameterValue("Nopb", noPB)
+        rptRekap.SetParameterValue("Tglpb", tglPB)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptRekap.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptRekap.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptRekap.Export()
+            rptRekap.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        '------------------'
+        '+ KARTON NON DPD +'
+        '------------------'
+        f = "KARTON NON DPD"
+        ''--++ 24-03-2014
+        'sb = New StringBuilder
+        'sb.AppendLine("INSERT INTO PBIDM_KARTONNONDPD")
+        'sb.AppendLine("( ")
+        'sb.AppendLine("  PBD_KODETOKO, ")
+        'sb.AppendLine("  PBD_NOPB, ")
+        'sb.AppendLine("  PBD_TGLPB, ")
+        'sb.AppendLine("  PBD_NAMAGROUP, ")
+        'sb.AppendLine("  PBD_KODERAK, ")
+        'sb.AppendLine("  PBD_SUBRAK, ")
+        'sb.AppendLine("  PBD_TIPERAK, ")
+        'sb.AppendLine("  PBD_PLU, ")
+        'sb.AppendLine("  PBD_NOURUT, ")
+        'sb.AppendLine("  PBD_DESKRIPSI, ")
+        'sb.AppendLine("  PBD_TAG, ")
+        'sb.AppendLine("  PBD_QTY, ")
+        'sb.AppendLine("  PBD_UNIT, ")
+        'sb.AppendLine("  PBD_FRAC, ")
+        'sb.AppendLine("  PBD_STOK,  ")
+        'sb.AppendLine("  PBD_CREATE_BY, ")
+        'sb.AppendLine("  PBD_CREATE_DT ")
+        'sb.AppendLine(") ")
+        'sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+        'sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+        'sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB, ")
+        'sb.AppendLine("       GRR_GroupRak as NamaGroup, ")
+        'sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        'sb.AppendLine("       LKS_KodeSubRak as SubRak, ")
+        'sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        'sb.AppendLine("       PLUKARTON as PLU, ")
+        'sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        'sb.AppendLine("       Desk, ")
+        'sb.AppendLine("       PRD_KodeTag as TAG, ")
+        'sb.AppendLine("       QTYB as ""Order"", ")
+        'sb.AppendLine("       UNITKarton ||'/'|| FracKarton as UNIT, ")
+        'sb.AppendLine("	      Stok, ")
+        'sb.AppendLine("       '" & UserID & "', ")
+        'sb.AppendLine("       CURRENT_DATE ")
+        'sb.AppendLine("  From temp_karton_nondpd_idm,tbMaster_Prodmast ")
+        'sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        'sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        'sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        'sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        'sb.AppendLine("   And PRD_PRDCD = PLUKARTON ")
+
+        'ExecQRY(sb.ToString, "INSERT INTO PBIDM_KARTONNONDPD")
+        ''---- 24-03-2014
+
+        sb = New StringBuilder
+        sb.AppendLine("Select DISTINCT GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as SubRak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       Desk, ")
+        sb.AppendLine("       PRD_KodeTag as TAG, ")
+        sb.AppendLine("       QTYB as ""Order"", ")
+        sb.AppendLine("       UNITKarton ||'/'|| FracKarton as UNIT, ")
+        '--------------'
+        '+ 01-05-2013 +'
+        '--------------'
+        sb.AppendLine("	      Stok ")
+        '--------------'
+        '- 01-05-2013 -'
+        '--------------'
+        sb.AppendLine("  From temp_karton_nondpd_idm,tbMaster_Prodmast ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON ")
+        sb.AppendLine(" Order By coalesce(GRR_GroupRak,'0'),LKS_KodeRak,LKS_KodeSubRak,LKS_TipeRak,LKS_NoUrut ")
+
+        IsiDT(sb.ToString, dtKartonNonDPD, "ISI dtKartonNonDPD", 3)
+
+        ds.KartonNonDPD.Clear()
+        ds.KartonNonDPD.Merge(dtKartonNonDPD)
+
+        rptKarton.SetDataSource(ds)
+        rptKarton.SetParameterValue("NamaCabang", NamaCab)
+        rptKarton.SetParameterValue("NamaToko", NamaToko)
+        rptKarton.SetParameterValue("KodeToko", KodeToko)
+        rptKarton.SetParameterValue("Nopb", noPB)
+        rptKarton.SetParameterValue("Tglpb", tglPB)
+        rptKarton.SetParameterValue("Batch", CounterKarton)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptKarton.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKarton.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKarton.Export()
+            rptKarton.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        '----------------------'
+        '+ ITEM ORDER DITOLAK +'
+        '----------------------'
+        f = "ORDER DITOLAK"
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PLU as PLUIDM, ")
+        sb.AppendLine("       PLUIGR, ")
+        sb.AppendLine("       PRD_DeskripsiPanjang as DESK, ")
+        sb.AppendLine("       PRD_UNIT||'/'||PRD_Frac as UNIT, ")
+        sb.AppendLine("       QTYO as QTY, ")
+        sb.AppendLine("       KETA as Keterangan         ")
+        sb.AppendLine("  From temp_cetakpb_tolakan_idm,tbMaster_Prodmast ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And KCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And NODOK = '" & noPB & "' ")
+        sb.AppendLine("   And TGLDOK = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUIGR ")
+        sb.AppendLine("   And KETA <> 'PLU TIDAK TERDAFTAR DI TBMASTER_PRODCRM' ")
+
+        IsiDT(sb.ToString, dtOrderDitolak, "ISI dtOrderDitolak", 4)
+
+        ds.OrderDitolak.Clear()
+        ds.OrderDitolak.Merge(dtOrderDitolak)
+
+        rptDitolak.SetDataSource(ds)
+        rptDitolak.SetParameterValue("NamaCabang", NamaCab)
+        rptDitolak.SetParameterValue("NamaToko", NamaToko)
+        rptDitolak.SetParameterValue("KodeToko", KodeToko)
+        rptDitolak.SetParameterValue("Nopb", noPB)
+        rptDitolak.SetParameterValue("Tglpb", tglPB)
+        'rptDitolak.SetParameterValue("Batch", CounterKarton)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptDitolak.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptDitolak.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptDitolak.Export()
+            rptDitolak.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        '---------------------------------'
+        '+ POSISI RAK JALUR TIDAK KETEMU +'
+        '---------------------------------'
+
+        '--++ 28-02-2014
+        'rptTidakKetemu = New rptRakJalurTidakketemu
+        rptTidakKetemu = New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+
+        f = "RAK JALUR TIDAK KETEMU"
+        sb = New StringBuilder
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        'sb.AppendLine("Select NJI.PluKecil as PLU, ")
+        '--------------'
+        '+ 04-09-2013 +'
+        '--------------'
+        'sb.AppendLine("Select DISTINCT NJI.PluKecil as PLU, ")
+        sb.AppendLine("Select DISTINCT NJI.PluKarton as PLU, ")
+        '--------------'
+        '- 04-09-2013 -'
+        '--------------'
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'        
+        sb.AppendLine("       NJI.DESK, ")
+
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        'sb.AppendLine("       lks_KodeRak as KodeRak, ")
+        'sb.AppendLine("       lks_KodeSubrak as SubRak, ")
+        'sb.AppendLine("       lks_TipeRak as TipeRak, ")
+        'sb.AppendLine("       lks_ShelvingRak as ShelvingRak, ")
+
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeRak,'') END as KodeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeSubrak,'') END as SubRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_TipeRak,'') END as TipeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_ShelvingRak,'') END as ShelvingRak, ")
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'
+
+        '--------------'
+        '+ 04-09-2013 +'
+        '--------------'
+        'sb.AppendLine("       NJI.QTYK as ""Order"", ")
+        'sb.AppendLine("       NJI.UnitKecil||'/'||NJI.FracKecil as UNIT,  ")
+        'sb.AppendLine("       NJI.UnitKecil||'/'||NJI.FracKecil as UNIT,  ")
+
+        sb.AppendLine("       NJI.QTYB as ""OrderCTN"", ")
+        sb.AppendLine("       NJI.QTYK as ""OrderPCS"", ")
+        sb.AppendLine("       NJI.UnitKarton||'/'||NJI.FracKarton as UNIT,  ")
+        '--------------'
+        '- 04-09-2013 -'
+        '--------------'
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        sb.AppendLine("       coalesce(NJI.FDRCID,'X') as RECID ")
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'
+        sb.AppendLine("  From TEMP_NOJALUR_IDM NJI, tbMaster_Lokasi ")
+        sb.AppendLine(" Where LKS_KodeIGR(+) = '" & KDIGR & "' ")
+        sb.AppendLine("   And LKS_PRDCD(+) = PLUKARTON ")
+        sb.AppendLine("   And LKS_KodeRak(+) Not Like 'D%' ")
+        sb.AppendLine("   And REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And fdnouo = '" & noPB & "' ")
+        sb.AppendLine("   And fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+        '--------------'
+        '+ 03-09-2013 +'
+        '--------------'
+        sb.AppendLine("   And LKS_TIPERAK(+) NOT LIKE  'S%' ")
+        '--------------'
+        '- 03-09-2013 -'
+        '--------------'
+        '--------------'
+        '+ 29-10-2013 +'
+        '--------------'
+        sb.AppendLine("  And Not EXISTS ")
+        sb.AppendLine("    ( ")
+        sb.AppendLine("       Select grr_grouprak ")
+        sb.AppendLine("         from tbmaster_grouprak,tbmaster_lokasi lks2 ")
+        sb.AppendLine("        where grr_koderak = lks2.lks_koderak ")
+        sb.AppendLine("          and grr_subrak = lks2.lks_kodesubrak ")
+        sb.AppendLine("          and LKS_KodeRak Like 'D%' ")
+        sb.AppendLine("          And LKS_TIPERAK(+) NOT LIKE 'S%' ")
+        sb.AppendLine("          and lks_prdcd = plukarton ")
+        sb.AppendLine("    )  ")
+        '--------------'
+        '- 29-10-2013 -'
+        '--------------'
+        sb.AppendLine("  Order By NJI.PLUKarton ")
+
+        IsiDT(sb.ToString, dtRakJalurTidakKetemu, "ISI dtRakJalurTidakKetemu", 5)
+
+        ds.RakJalurTidakKetemu.Clear()
+        ds.RakJalurTidakKetemu.Merge(dtRakJalurTidakKetemu)
+
+        rptTidakKetemu.SetDataSource(ds)
+        rptTidakKetemu.SetParameterValue("NamaCabang", NamaCab)
+        rptTidakKetemu.SetParameterValue("NamaToko", NamaToko)
+        rptTidakKetemu.SetParameterValue("KodeToko", KodeToko)
+        rptTidakKetemu.SetParameterValue("NoPB", noPB)
+        rptTidakKetemu.SetParameterValue("TglPB", tglPB)
+        rptTidakKetemu.SetParameterValue("Batch", CounterKecil)
+
+        Try
+            'Dim CrExportOptions As ExportOptions
+            'Dim CrDiskFileDestinationOptions As New _
+            'DiskFileDestinationOptions()
+            'Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            'CrDiskFileDestinationOptions.DiskFileName = _
+            '                            "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF"
+            ''CrExportOptions = cryRpt.ExportOptions
+            'CrExportOptions = rptTidakKetemu.ExportOptions
+            'With CrExportOptions
+            '    .ExportDestinationType = ExportDestinationType.DiskFile
+            '    .ExportFormatType = ExportFormatType.PortableDocFormat
+            '    .DestinationOptions = CrDiskFileDestinationOptions
+            '    .FormatOptions = CrFormatTypeOptions
+            'End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            'rptTidakKetemu.Export()
+            MsgBox("EDAN 1")
+            'System.Threading.Thread.Sleep(100)            
+            rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, "C:\TEMP\\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            MsgBox("EDAN 2")
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            'CrDiskFileDestinationOptions.DiskFileName = _
+            '                                        PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            MsgBox("EDAN 3")
+            'rptTidakKetemu.Export()
+            'System.Threading.Thread.Sleep(100)
+            rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            MsgBox("EDAN 4")
+            rptTidakKetemu.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        '----------------------'
+        '+ JALUR CETAK KERTAS +'
+        '----------------------'
+        f = "JALUR CETAK KERTAS"
+        sb = New StringBuilder
+        sb.AppendLine("Select GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as Subrak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       DESK, ")
+        sb.AppendLine("       PRD_KodeTag, ")
+        sb.AppendLine("       QTYK as ""ORDER"", ")
+        sb.AppendLine("       UNITKECIL ||' /'|| FRACKECIL as UNIT, ")
+        '--------------'
+        '+ 06-05-2013 +'
+        '--------------'
+        sb.AppendLine("       STOK ")
+        '--------------'
+        '- 06-05-2013 -'
+        '--------------'
+        sb.AppendLine("  From TEMP_JALURKERTAS_IDM, tbMaster_Prodmast   ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON  ")
+        '--------------'
+        '+ 02-07-2013 +'
+        '--------------'
+        'If KDIGR = "20" Or KDIGR = "21" Then
+        '    sb.AppendLine("   And coalesce(PRD_FRAC,0) > 1 ")
+        'End If
+        '--------------'
+        '+ 02-07-2013 +'
+        '--------------'
+        sb.AppendLine(" Order By coalesce(GRR_GROUPRAK,'0'),LKS_KodeRak,LKS_KodeSubRak,LKS_TipeRak,LKS_NoUrut ")
+
+        IsiDT(sb.ToString, dtJalurCetakKertas, "ISI dtJalurCetakKertas", 6)
+
+        ds.JalurCetakKertas.Clear()
+        ds.JalurCetakKertas.Merge(dtJalurCetakKertas)
+
+        rptKertas.SetDataSource(ds)
+        rptKertas.SetParameterValue("NamaCabang", NamaCab)
+        rptKertas.SetParameterValue("NamaToko", NamaToko)
+        rptKertas.SetParameterValue("KodeToko", KodeToko)
+        rptKertas.SetParameterValue("Nopb", noPB)
+        rptKertas.SetParameterValue("Tglpb", tglPB)
+        rptKertas.SetParameterValue("Batch", CounterKecil)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptKertas.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKertas.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKertas.Export()
+            rptKertas.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        Application.DoEvents()
+        'progress.Value = 90
+
+        AdaProses = True
+        progress.Value = 100
+        Cursor = Cursors.Arrow
+        'rpt.PrintOptions.PrinterName = oPs.PrinterName
+        'rpt.PrintToPrinter(1, True, 1, 1)
+        'rpt.Dispose()
+    End Sub
+
+    Private Sub CetakALL_1(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        Dim dtListOrder As New DataSet1.ListOrderDataTable
+
+        Dim rptListOrder As New rptListingTransferOrder
+
+        Dim jum As Integer = 0
+
+        'IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        f = "LIST ORDER PB"
+
+        '--------------'
+        '+ 24-06-2013 +'
+        '--------------'
+        sb = New StringBuilder
+        sb.AppendLine("Select coalesce(COUNT(1),0)  ")
+        sb.AppendLine("  From information_schema.columns ")
+        sb.AppendLine(" Where UPPER(table_name) = 'TBMASTER_MARGINPLUIDM' ")
+
+        If cn.State = ConnectionState.Closed Then cn.Open()
+        cmd.CommandText = sb.ToString
+        jum = cmd.ExecuteScalar.ToString
+
+        If jum > 0 Then
+            '--++ 24-03-2014
+            sb = New StringBuilder
+            sb.AppendLine("INSERT INTO PBIDM_LISTORDER ")
+            sb.AppendLine("  ( ")
+            sb.AppendLine("  PBL_KODETOKO, ")
+            sb.AppendLine("  PBL_NOPB, ")
+            sb.AppendLine("  PBL_TGLPB, ")
+            sb.AppendLine("  PBL_PLU, ")
+            sb.AppendLine("  PBL_DESKRIPSI, ")
+            sb.AppendLine("  PBL_UNIT, ")
+            sb.AppendLine("  PBL_FRAC, ")
+            sb.AppendLine("  PBL_QTYB, ")
+            sb.AppendLine("  PBL_QTYK, ")
+            sb.AppendLine("  PBL_QTYO, ")
+            sb.AppendLine("  PBL_HRGSATUAN, ")
+            sb.AppendLine("  PBL_NILAI, ")
+            sb.AppendLine("  PBL_PPN, ")
+            sb.AppendLine("  PBL_TOTAL, ")
+            sb.AppendLine("  PBL_CREATE_BY, ")
+            sb.AppendLine("  PBL_CREATE_DT ")
+            sb.AppendLine("  ) ")
+            sb.AppendLine("Select '" & KodeToko & "' as KODETOKO, ")
+            sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            sb.AppendLine("       TO_DATE('" & tglPB & "','DD-MM-YYYY') as TglPB,  ")
+            sb.AppendLine("       plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton as unit,  ")
+            sb.AppendLine("       frackarton as frac, ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL, ")
+            sb.AppendLine("       '" & UserID & "', ")
+            sb.AppendLine("       CURRENT_DATE ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+
+            ExecQRY(sb.ToString, "INSERT INTO PBIDM_LISTORDER")
+            '---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100))) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            sb.AppendLine(" Order By plukarton ")
+        Else
+            '--++ 24-03-2014
+            sb = New StringBuilder
+            sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            sb.AppendLine("  ( ")
+            sb.AppendLine("  PBL_KODETOKO, ")
+            sb.AppendLine("  PBL_NOPB, ")
+            sb.AppendLine("  PBL_TGLPB, ")
+            sb.AppendLine("  PBL_PLU, ")
+            sb.AppendLine("  PBL_DESKRIPSI, ")
+            sb.AppendLine("  PBL_UNIT, ")
+            sb.AppendLine("  PBL_QTYB, ")
+            sb.AppendLine("  PBL_QTYK, ")
+            sb.AppendLine("  PBL_QTYO, ")
+            sb.AppendLine("  PBL_HRGSATUAN, ")
+            sb.AppendLine("  PBL_NILAI, ")
+            sb.AppendLine("  PBL_PPN, ")
+            sb.AppendLine("  PBL_TOTAL, ")
+            sb.AppendLine("  PBL_CREATE_BY, ")
+            sb.AppendLine("  PBL_CREATE_DT ")
+            sb.AppendLine("  ) ")
+            sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB,  ")
+            sb.AppendLine("       plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+ " & PersenMargin & ")) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL, ")
+            sb.AppendLine("       '" & UserID & "', ")
+            sb.AppendLine("       CURRENT_DATE ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+
+            ExecQRY(sb.ToString, "INSERT INTO PBIDM_LISTORDER")
+            '---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select plukarton as plu,  ")
+            sb.AppendLine("       desk,  ")
+            sb.AppendLine("       unitkarton ||'/'|| frackarton as unit,  ")
+            sb.AppendLine("       qtyb as qty, ")
+            sb.AppendLine("       qtyk as frc,  ")
+            sb.AppendLine("       fdqtyb as inpcs,  ")
+            sb.AppendLine("       Round(avgcost * (1+ " & PersenMargin & ")) as Harga, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) as Nilai, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END as PPN, ")
+            sb.AppendLine("       fdqtyb * round(avgcost * (1+" & PersenMargin & ")) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END) as TOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')   ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine(" Order By plukarton ")
+        End If
+
+        IsiDT(sb.ToString, dtListOrder, "ISI dtListOrder", 1)
+
+        ds.ListOrder.Clear()
+        ds.ListOrder.Merge(dtListOrder)
+
+        rptListOrder.SetDataSource(ds)
+        rptListOrder.SetParameterValue("NamaCabang", NamaCab)
+        rptListOrder.SetParameterValue("NamaToko", NamaToko)
+        rptListOrder.SetParameterValue("KodeToko", KodeToko)
+        rptListOrder.SetParameterValue("Nopb", noPB)
+        rptListOrder.SetParameterValue("Tglpb", tglPB)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptListOrder.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptListOrder.Export()
+
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\LIST_ORDER\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\LIST_ORDER\LIST_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptListOrder.Export()
+            rptListOrder.Dispose()
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+    End Sub
+
+    Private Sub CetakALL_2(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        'Dim dtListOrder As New DataSet1.ListOrderDataTable
+        Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        'Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        'Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        'Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        'Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        'Dim rptListOrder As New rptListingTransferOrder
+        Dim rptRekap As New rptRekapOrder
+        'Dim rptKarton As New rptKartonNonDPD
+        'Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+        'Dim rptKertas As New rptJalurCetakKertas
+
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        f = "REKAP ORDER PB"
+        '--------------'
+        '+ 24-06-2013 +'
+        '--------------'
+        sb = New StringBuilder
+        sb.AppendLine("Select coalesce(COUNT(1),0)  ")
+        sb.AppendLine("  From information_schema.columns ")
+        sb.AppendLine(" Where UPPER(table_name) = 'TBMASTER_MARGINPLUIDM' ")
+
+        If cn.State = ConnectionState.Closed Then cn.Open()
+        cmd.CommandText = sb.ToString
+        jum = cmd.ExecuteScalar.ToString
+
+        If jum > 0 Then
+            '--++ 24-03-2014
+            sb = New StringBuilder
+            sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            sb.AppendLine("  ( ")
+            sb.AppendLine("  PBR_KODETOKO, ")
+            sb.AppendLine("  PBR_NOPB, ")
+            sb.AppendLine("  PBR_TGLPB, ")
+            sb.AppendLine("  PBR_NAMADIVISI, ")
+            sb.AppendLine("  PBR_KODEDIVISI, ")
+            sb.AppendLine("  PBL_ITEM, ")
+            sb.AppendLine("  PBL_NILAI, ")
+            sb.AppendLine("  PBL_PPN, ")
+            sb.AppendLine("  PBL_SUBTOTAL, ")
+            sb.AppendLine("  PBL_CREATE_BY, ")
+            sb.AppendLine("  PBL_CREATE_DT ")
+            sb.AppendLine("  ) ")
+            sb.AppendLine("Select '" & KodeToko & "' as KODETOKO, ")
+            sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            sb.AppendLine("       TO_DATE('" & tglPB & "','DD-MM-YYYY') as TglPB, ")
+            sb.AppendLine("       DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL, ")
+            sb.AppendLine("       '" & UserID & "', ")
+            sb.AppendLine("       CURRENT_DATE ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+
+            ExecQRY(sb.ToString, "INSERT INTO PBIDM_REKAPORDER")
+            '---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+(coalesce(MPI_MARGIN,3)/100)) * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi, tbMaster_MarginPLUIDM ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine("   and MPI_PluIGR(+) = PLUKARTON ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+            sb.AppendLine(" Order By PRD_KodeDivisi ")
+        Else
+            '--++ 24-03-2014
+            sb = New StringBuilder
+            sb.AppendLine("INSERT INTO PBIDM_REKAPORDER  ")
+            sb.AppendLine("  ( ")
+            sb.AppendLine("  PBR_KODETOKO, ")
+            sb.AppendLine("  PBR_NOPB, ")
+            sb.AppendLine("  PBR_TGLPB, ")
+            sb.AppendLine("  PBR_NAMADIVISI, ")
+            sb.AppendLine("  PBR_KODEDIVISI, ")
+            sb.AppendLine("  PBL_ITEM, ")
+            sb.AppendLine("  PBL_NILAI, ")
+            sb.AppendLine("  PBL_PPN, ")
+            sb.AppendLine("  PBL_SUBTOTAL, ")
+            sb.AppendLine("  PBL_CREATE_BY, ")
+            sb.AppendLine("  PBL_CREATE_DT ")
+            sb.AppendLine("  ) ")
+            sb.AppendLine("Select '" & KodeToko & "' as KODETOKO ")
+            sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+            sb.AppendLine("       TO_DATE('" & tglPB & "','YYYYMMDD') as TglPB, ")
+            sb.AppendLine("       DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL, ")
+            sb.AppendLine("       '" & UserID & "', ")
+            sb.AppendLine("       CURRENT_DATE ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+
+            ExecQRY(sb.ToString, "INSERT INTO PBIDM_REKAPORDER")
+            '---- 24-03-2014
+
+            sb = New StringBuilder
+            sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+            sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+            sb.AppendLine("       Count(PLUKARTON) as Item, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (COALESCE(PRD_PPN,0)/100) * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+            sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN (COALESCE(PRD_PPN,0)/100) ELSE 0 END))) as SUBTOTAL ")
+            sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+            sb.AppendLine(" Where req_id = '" & IP & "' ")
+            sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+            sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+            sb.AppendLine("   and prd_prdcd = plukarton ")
+            sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+            sb.AppendLine(" Group By DIV_NamaDivisi, ")
+            sb.AppendLine("          PRD_KodeDivisi ")
+            sb.AppendLine(" Order By PRD_KodeDivisi ")
+        End If
+
+        'sb = New StringBuilder
+        'sb.AppendLine("Select DIV_NamaDivisi as NamaDivisi, ")
+        'sb.AppendLine("       PRD_KodeDivisi as KodeDivisi, ")
+        'sb.AppendLine("       Count(PLUKARTON) as Item, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & "))) as Nilai, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * 0.1 * CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 1 ELSE 0 END)) as PPN, ")
+        'sb.AppendLine("       SUM(fdqtyb * round(avgcost * (1+" & PersenMargin & ") * (1 + CASE WHEN coalesce(PRD_FlagBKP1,'X') = 'Y' THEN 0.1 ELSE 0 END))) as SUBTOTAL ")
+        'sb.AppendLine("  From temp_pbidm_ready, tbMaster_prodmast, tbMaster_Divisi ")
+        'sb.AppendLine(" Where req_id = '" & IP & "' ")
+        'sb.AppendLine("   and fdnouo = '" & noPB & "' ")
+        'sb.AppendLine("   and fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+        'sb.AppendLine("   and prd_prdcd = plukarton ")
+        'sb.AppendLine("   and DIV_KodeDivisi = PRD_KodeDivisi ")
+        'sb.AppendLine(" Group By DIV_NamaDivisi, ")
+        'sb.AppendLine("          PRD_KodeDivisi ")
+        'sb.AppendLine(" Order By PRD_KodeDivisi ")
+        '--------------'
+        '- 24-06-2013 -'
+        '--------------'
+
+        IsiDT(sb.ToString, dtRekapOrder, "ISI dtRekapOrder", 2)
+
+        ds.RekapOrder.Clear()
+        ds.RekapOrder.Merge(dtRekapOrder)
+
+        rptRekap.SetDataSource(ds)
+        rptRekap.SetParameterValue("NamaCabang", NamaCab)
+        rptRekap.SetParameterValue("NamaToko", NamaToko)
+        rptRekap.SetParameterValue("KodeToko", KodeToko)
+        rptRekap.SetParameterValue("Nopb", noPB)
+        rptRekap.SetParameterValue("Tglpb", tglPB)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New  _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptRekap.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptRekap.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\REKAP_ORDER\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\REKAP_ORDER\REKAP_ORDER-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptRekap.Export()
+            rptRekap.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+    End Sub
+
+    Private Sub CetakALL_3(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        'Dim dtListOrder As New DataSet1.ListOrderDataTable
+        'Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        'Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        'Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        'Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        'Dim rptListOrder As New rptListingTransferOrder
+        'Dim rptRekap As New rptRekapOrder
+        Dim rptKarton As New rptKartonNonDPD
+        'Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+        'Dim rptKertas As New rptJalurCetakKertas
+
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        '------------------'
+        '+ KARTON NON DPD +'
+        '------------------'
+        f = "KARTON NON DPD"
+
+        '--++ 24-03-2014
+        sb = New StringBuilder
+        sb.AppendLine("INSERT INTO PBIDM_KARTONNONDPD")
+        sb.AppendLine("( ")
+        sb.AppendLine("  PBD_KODETOKO, ")
+        sb.AppendLine("  PBD_NOPB, ")
+        sb.AppendLine("  PBD_TGLPB, ")
+        sb.AppendLine("  PBD_NAMAGROUP, ")
+        sb.AppendLine("  PBD_KODERAK, ")
+        sb.AppendLine("  PBD_SUBRAK, ")
+        sb.AppendLine("  PBD_TIPERAK, ")
+        sb.AppendLine("  PBD_PLU, ")
+        sb.AppendLine("  PBD_NOURUT, ")
+        sb.AppendLine("  PBD_DESKRIPSI, ")
+        sb.AppendLine("  PBD_TAG, ")
+        sb.AppendLine("  PBD_QTY, ")
+        sb.AppendLine("  PBD_UNIT, ")
+        sb.AppendLine("  PBD_FRAC, ")
+        sb.AppendLine("  PBD_STOK,  ")
+        sb.AppendLine("  PBD_CREATE_BY, ")
+        sb.AppendLine("  PBD_CREATE_DT ")
+        sb.AppendLine(") ")
+        sb.AppendLine("Select '" & KodeToko & "' as KODETOKO, ")
+        sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+        sb.AppendLine("       TO_DATE('" & tglPB & "','DD-MM-YYYY') as TglPB, ")
+        sb.AppendLine("       GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as SubRak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       Desk, ")
+        sb.AppendLine("       PRD_KodeTag as TAG, ")
+        sb.AppendLine("       QTYB as ""Order"", ")
+        sb.AppendLine("       UNITKarton , ")
+        sb.AppendLine("       FracKarton, ")
+        sb.AppendLine("	      Stok, ")
+        sb.AppendLine("       '" & UserID & "', ")
+        sb.AppendLine("       CURRENT_DATE ")
+        sb.AppendLine("  From temp_karton_nondpd_idm,tbMaster_Prodmast ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON ")
+
+        ExecQRY(sb.ToString, "INSERT INTO PBIDM_KARTONNONDPD")
+        '---- 24-03-2014
+
+        sb = New StringBuilder
+        sb.AppendLine("Select DISTINCT GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as SubRak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       Desk, ")
+        sb.AppendLine("       PRD_KodeTag as TAG, ")
+        sb.AppendLine("       QTYB as ""Order"", ")
+        sb.AppendLine("       UNITKarton ||'/'|| FracKarton as UNIT, ")
+        '--------------'
+        '+ 01-05-2013 +'
+        '--------------'
+        sb.AppendLine("	      Stok ")
+        '--------------'
+        '- 01-05-2013 -'
+        '--------------'
+        sb.AppendLine("  From temp_karton_nondpd_idm,tbMaster_Prodmast ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON ")
+        sb.AppendLine(" Order By coalesce(GRR_GroupRak,'0'),LKS_KodeRak,LKS_KodeSubRak,LKS_TipeRak,LKS_NoUrut ")
+
+        IsiDT(sb.ToString, dtKartonNonDPD, "ISI dtKartonNonDPD", 3)
+
+        ds.KartonNonDPD.Clear()
+        ds.KartonNonDPD.Merge(dtKartonNonDPD)
+
+        rptKarton.SetDataSource(ds)
+        rptKarton.SetParameterValue("NamaCabang", NamaCab)
+        rptKarton.SetParameterValue("NamaToko", NamaToko)
+        rptKarton.SetParameterValue("KodeToko", KodeToko)
+        rptKarton.SetParameterValue("Nopb", noPB)
+        rptKarton.SetParameterValue("Tglpb", tglPB)
+        rptKarton.SetParameterValue("Batch", CounterKarton)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptKarton.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKarton.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\KARTON_NONDPD\KARTON_NONDPD-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKarton.Export()
+            rptKarton.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        Application.DoEvents()
+        'progress.Value = 90
+
+        AdaProses = True
+        progress.Value = 90
+        Cursor = Cursors.Arrow
+        'rpt.PrintOptions.PrinterName = oPs.PrinterName
+        'rpt.PrintToPrinter(1, True, 1, 1)
+        'rpt.Dispose()
+    End Sub
+
+    Private Sub CetakALL_4(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        'Dim dtListOrder As New DataSet1.ListOrderDataTable
+        'Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        'Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        'Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        'Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        'Dim rptListOrder As New rptListingTransferOrder
+        'Dim rptRekap As New rptRekapOrder
+        'Dim rptKarton As New rptKartonNonDPD
+        Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+        'Dim rptKertas As New rptJalurCetakKertas
+
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        '----------------------'
+        '+ ITEM ORDER DITOLAK +'
+        '----------------------'
+        f = "ORDER DITOLAK"
+        sb = New StringBuilder
+        sb.AppendLine("Select PLU as PLUIDM, ")
+        sb.AppendLine("       PLUIGR, ")
+        sb.AppendLine("       PRD_DeskripsiPanjang as DESK, ")
+        sb.AppendLine("       PRD_UNIT||'/'||PRD_Frac as UNIT, ")
+        sb.AppendLine("       QTYO as QTY, ")
+        sb.AppendLine("       KETA as Keterangan         ")
+        sb.AppendLine("  From temp_cetakpb_tolakan_idm,tbMaster_Prodmast ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And KCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And NODOK = '" & noPB & "' ")
+        sb.AppendLine("   And TGLDOK = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUIGR ")
+        sb.AppendLine("   And KETA <> 'PLU TIDAK TERDAFTAR DI TBMASTER_PRODCRM' ")
+
+        IsiDT(sb.ToString, dtOrderDitolak, "ISI dtOrderDitolak", 4)
+
+        ds.OrderDitolak.Clear()
+        ds.OrderDitolak.Merge(dtOrderDitolak)
+
+        rptDitolak.SetDataSource(ds)
+        rptDitolak.SetParameterValue("NamaCabang", NamaCab)
+        rptDitolak.SetParameterValue("NamaToko", NamaToko)
+        rptDitolak.SetParameterValue("KodeToko", KodeToko)
+        rptDitolak.SetParameterValue("Nopb", noPB)
+        rptDitolak.SetParameterValue("Tglpb", tglPB)
+        'rptDitolak.SetParameterValue("Batch", CounterKarton)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptDitolak.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptDitolak.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\ORDER_DITOLAK\ORDER_DITOLAK-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptDitolak.Export()
+            rptDitolak.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        Application.DoEvents()
+        'progress.Value = 90
+
+        AdaProses = True
+        progress.Value = 90
+        Cursor = Cursors.Arrow
+        'rpt.PrintOptions.PrinterName = oPs.PrinterName
+        'rpt.PrintToPrinter(1, True, 1, 1)
+        'rpt.Dispose()
+    End Sub
+
+    Private Sub CetakALL_5(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        'Dim dtListOrder As New DataSet1.ListOrderDataTable
+        'Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        'Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        'Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        'Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        'Dim rptListOrder As New rptListingTransferOrder
+        'Dim rptRekap As New rptRekapOrder
+        'Dim rptKarton As New rptKartonNonDPD
+        'Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu
+        Dim rptTidakKetemu As New rptRakJalurTidakKetemu3
+        '---- 28-02-2014
+        'Dim rptKertas As New rptJalurCetakKertas
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        '---------------------------------'
+        '+ POSISI RAK JALUR TIDAK KETEMU +'
+        '---------------------------------'
+
+        '--++ 28-02-2014
+        'rptTidakKetemu = New rptRakJalurTidakketemu
+        rptTidakKetemu = New rptRakJalurTidakKetemu3
+        '---- 28-02-2014
+
+        f = "RAK JALUR TIDAK KETEMU"
+        '--++ 24-03-2014
+        sb = New StringBuilder
+        sb.AppendLine("INSERT INTO PBIDM_RAKJALUR_TIDAKKETEMU")
+        sb.AppendLine("( ")
+        sb.AppendLine("  PBT_KODETOKO, ")
+        sb.AppendLine("  PBT_NOPB, ")
+        sb.AppendLine("  PBT_TGLPB, ")
+        sb.AppendLine("  PBT_PLU, ")
+        sb.AppendLine("  PBT_DESKRIPSI, ")
+        sb.AppendLine("  PBT_KODERAK, ")
+        sb.AppendLine("  PBT_SUBRAK, ")
+        sb.AppendLine("  PBT_TIPERAK, ")
+        sb.AppendLine("  PBT_SHELVINGRAK, ")
+        sb.AppendLine("  PBT_QTYB, ")
+        sb.AppendLine("  PBT_QTYK, ")
+        sb.AppendLine("  PBT_UNITKARTON, ")
+        sb.AppendLine("  PBT_FRACKARTON, ")
+        sb.AppendLine("  PBT_RECORDID, ")
+        sb.AppendLine("  PBT_CREATE_BY, ")
+        sb.AppendLine("  PBT_CREATE_DT ")
+        sb.AppendLine(") ")
+        sb.AppendLine("Select DISTINCT '" & KodeToko & "' as KODETOKO, ")
+        sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+        sb.AppendLine("       TO_DATE('" & tglPB & "','DD-MM-YYYY') as TglPB, ")
+        sb.AppendLine("       NJI.PluKarton as PLU, ")
+        sb.AppendLine("       NJI.DESK, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeRak,'') END as KodeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeSubrak,'') END as SubRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_TipeRak,'') END as TipeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_ShelvingRak,'') END as ShelvingRak, ")
+        sb.AppendLine("       NJI.QTYB as OrderCTN, ")
+        sb.AppendLine("       NJI.QTYK as OrderPCS, ")
+        sb.AppendLine("       NJI.UnitKarton, ")
+        sb.AppendLine("       NJI.FracKarton, ")
+        sb.AppendLine("       coalesce(NJI.FDRCID,'X') as RECID, ")
+        sb.AppendLine("       '" & UserID & "', ")
+        sb.AppendLine("       CURRENT_DATE ")
+        sb.AppendLine("  From TEMP_NOJALUR_IDM NJI, tbMaster_Lokasi ")
+        sb.AppendLine(" Where LKS_KodeIGR(+) = '" & KDIGR & "' ")
+        sb.AppendLine("   And LKS_PRDCD(+) = PLUKARTON ")
+        sb.AppendLine("   And LKS_KodeRak(+) Not Like 'D%' ")
+        sb.AppendLine("   And REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And fdnouo = '" & noPB & "' ")
+        sb.AppendLine("   And fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+        sb.AppendLine("   And LKS_TIPERAK(+) NOT LIKE  'S%' ")
+        sb.AppendLine("  And Not EXISTS ")
+        sb.AppendLine("    ( ")
+        sb.AppendLine("       Select grr_grouprak ")
+        sb.AppendLine("         from tbmaster_grouprak,tbmaster_lokasi lks2 ")
+        sb.AppendLine("        where grr_koderak = lks2.lks_koderak ")
+        sb.AppendLine("          and grr_subrak = lks2.lks_kodesubrak ")
+        sb.AppendLine("          and LKS_KodeRak Like 'D%' ")
+        sb.AppendLine("          And LKS_TIPERAK(+) NOT LIKE 'S%' ")
+        sb.AppendLine("          and lks_prdcd = plukarton ")
+        sb.AppendLine("    )  ")        
+
+        ExecQRY(sb.ToString, "INSERT INTO PBIDM_RAKJALUR_TIDAKKETEMU")
+        '---- 24-03-2014
+
+        sb = New StringBuilder
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        'sb.AppendLine("Select NJI.PluKecil as PLU, ")
+        '--------------'
+        '+ 04-09-2013 +'
+        '--------------'
+        'sb.AppendLine("Select DISTINCT NJI.PluKecil as PLU, ")
+        sb.AppendLine("Select DISTINCT NJI.PluKarton as PLU, ")
+        '--------------'
+        '- 04-09-2013 -'
+        '--------------'
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'        
+        sb.AppendLine("       NJI.DESK, ")
+
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        'sb.AppendLine("       lks_KodeRak as KodeRak, ")
+        'sb.AppendLine("       lks_KodeSubrak as SubRak, ")
+        'sb.AppendLine("       lks_TipeRak as TipeRak, ")
+        'sb.AppendLine("       lks_ShelvingRak as ShelvingRak, ")
+
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeRak,'') END as KodeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_KodeSubrak,'') END as SubRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_TipeRak,'') END as TipeRak, ")
+        sb.AppendLine("       CASE WHEN NJI.FDRCID = 'B' THEN '' ELSE coalesce(lks_ShelvingRak,'') END as ShelvingRak, ")
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'
+
+        '--------------'
+        '+ 04-09-2013 +'
+        '--------------'
+        'sb.AppendLine("       NJI.QTYK as ""Order"", ")
+        'sb.AppendLine("       NJI.UnitKecil||'/'||NJI.FracKecil as UNIT,  ")
+        'sb.AppendLine("       NJI.UnitKecil||'/'||NJI.FracKecil as UNIT,  ")
+
+        sb.AppendLine("       NJI.QTYB as OrderCTN, ")
+        sb.AppendLine("       NJI.QTYK as OrderPCS, ")
+        sb.AppendLine("       NJI.UnitKarton||'/'||NJI.FracKarton as UNIT,  ")
+        '--------------'
+        '- 04-09-2013 -'
+        '--------------'
+        '--------------'
+        '+ 28-08-2013 +'
+        '--------------'
+        sb.AppendLine("       coalesce(NJI.FDRCID,'X') as RECID ")
+        '--------------'
+        '- 28-08-2013 -'
+        '--------------'
+        sb.AppendLine("  From TEMP_NOJALUR_IDM NJI, tbMaster_Lokasi ")
+        sb.AppendLine(" Where LKS_KodeIGR(+) = '" & KDIGR & "' ")
+        sb.AppendLine("   And LKS_PRDCD(+) = PLUKARTON ")
+        sb.AppendLine("   And LKS_KodeRak(+) Not Like 'D%' ")
+        sb.AppendLine("   And REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And fdnouo = '" & noPB & "' ")
+        sb.AppendLine("   And fdtgpb = to_date('" & tglPB & "','DD-MM-YYYY')  ")
+        '--------------'
+        '+ 03-09-2013 +'
+        '--------------'
+        sb.AppendLine("   And LKS_TIPERAK(+) NOT LIKE  'S%' ")
+        '--------------'
+        '- 03-09-2013 -'
+        '--------------'
+        '--------------'
+        '+ 29-10-2013 +'
+        '--------------'
+        sb.AppendLine("  And Not EXISTS ")
+        sb.AppendLine("    ( ")
+        sb.AppendLine("       Select grr_grouprak ")
+        sb.AppendLine("         from tbmaster_grouprak,tbmaster_lokasi lks2 ")
+        sb.AppendLine("        where grr_koderak = lks2.lks_koderak ")
+        sb.AppendLine("          and grr_subrak = lks2.lks_kodesubrak ")
+        sb.AppendLine("          and LKS_KodeRak Like 'D%' ")
+        sb.AppendLine("          And LKS_TIPERAK(+) NOT LIKE 'S%' ")
+        sb.AppendLine("          and lks_prdcd = plukarton ")
+        sb.AppendLine("    )  ")
+        '--------------'
+        '- 29-10-2013 -'
+        '--------------'
+        sb.AppendLine("  Order By NJI.PLUKarton ")
+
+        IsiDT(sb.ToString, dtRakJalurTidakKetemu, "ISI dtRakJalurTidakKetemu", 5)
+
+        ds.RakJalurTidakKetemu.Clear()
+        ds.RakJalurTidakKetemu.Merge(dtRakJalurTidakKetemu)
+
+        rptTidakKetemu.SetDataSource(ds)
+        rptTidakKetemu.SetParameterValue("NamaCabang", NamaCab)
+        rptTidakKetemu.SetParameterValue("NamaToko", NamaToko)
+        rptTidakKetemu.SetParameterValue("KodeToko", KodeToko)
+        rptTidakKetemu.SetParameterValue("NoPB", noPB)
+        rptTidakKetemu.SetParameterValue("TglPB", tglPB)
+        rptTidakKetemu.SetParameterValue("Batch", CounterKecil)
+
+
+        'MsgBox("EDAN X")
+        'frmViewer.crv.ReportSource = rptTidakKetemu        
+        'frmViewer.Visible = False
+        'frmViewer.Show()
+        'frmViewer.Close()
+        'MsgBox("EDAN Y")
+
+        'While rptTidakKetemu.IsLoaded = False
+        '    rptTidakKetemu.Load()
+        'End While
+
+        Try
+            'Dim CrExportOptions As ExportOptions
+            'Dim CrDiskFileDestinationOptions As New _
+            'DiskFileDestinationOptions()
+            'Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            'CrDiskFileDestinationOptions.DiskFileName = _
+            '                            "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF"
+            ''CrExportOptions = cryRpt.ExportOptions
+            'CrExportOptions = rptTidakKetemu.ExportOptions
+            'With CrExportOptions
+            '    .ExportDestinationType = ExportDestinationType.DiskFile
+            '    .ExportFormatType = ExportFormatType.PortableDocFormat
+            '    .DestinationOptions = CrDiskFileDestinationOptions
+            '    .FormatOptions = CrFormatTypeOptions
+            'End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            'rptTidakKetemu.Export()
+            'MsgBox("EDAN 1")
+            'System.Threading.Thread.Sleep(100)            
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, "C:\TEMP\\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.Excel, "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".XLS")
+            'MsgBox("EDAN 2")
+
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.Excel, "C:\TEMP\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".XLS")
+            'MsgBox("EDAN 3")
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            'CrDiskFileDestinationOptions.DiskFileName = _
+            '                                        PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            'MsgBox("EDAN 3")
+            'rptTidakKetemu.Export()
+            'System.Threading.Thread.Sleep(100)
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.PortableDocFormat, PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".PDF")
+            'rptTidakKetemu.ExportToDisk(ExportFormatType.Excel, PathStruk & "\TEXT\IDM\" & KodeToko & "\TIDAK_KETEMU\TIDAK_KETEMU-" & tglPB & "-" & noPB & ".XLS")
+            'MsgBox("EDAN 4")
+            rptTidakKetemu.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+    End Sub
+
+    Private Sub CetakALL_6(ByVal PersenMargin As Double, ByVal CounterKarton As String, ByVal CounterKecil As String)
+        Dim IP As String = ""
+        Dim NamaCab As String = ""
+
+        Dim ds As New DataSet1
+        Dim NamaToko As String = ""
+        Dim oPs As New System.Drawing.Printing.PrinterSettings
+
+        Dim PathStruk As String = ""
+        Dim f As String = ""
+
+        'Dim dtListOrder As New DataSet1.ListOrderDataTable
+        'Dim dtRekapOrder As New DataSet1.RekapOrderDataTable
+        'Dim dtKartonNonDPD As New DataSet1.KartonNonDPDDataTable
+        'Dim dtOrderDitolak As New DataSet1.OrderDitolakDataTable
+        'Dim dtRakJalurTidakKetemu As New DataSet1.RakJalurTidakKetemuDataTable
+        Dim dtJalurCetakKertas As New DataSet1.JalurCetakKertasDataTable
+
+        'Dim rptListOrder As New rptListingTransferOrder
+        'Dim rptRekap As New rptRekapOrder
+        'Dim rptKarton As New rptKartonNonDPD
+        'Dim rptDitolak As New rptOrderDitolak
+        '--++ 28-02-2014
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        'Dim rptTidakKetemu As New rptRakJalurTidakKetemu2
+        '---- 28-02-2014
+        Dim rptKertas As New rptJalurCetakKertas
+
+        Dim jum As Integer = 0
+
+        IP = getIP()
+        PathStruk = enc.PassToChar(Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegPath & ProgName).GetValue("PATH_STRUK").ToString)
+
+        sb = New StringBuilder
+        sb.AppendLine("Select PRS_NamaCabang ")
+        sb.AppendLine("  From tbMaster_perusahaan ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaCab = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        sb = New StringBuilder
+        sb.AppendLine("Select TKO_NamaOMI ")
+        sb.AppendLine("  From tbMaster_TokoIGR ")
+        sb.AppendLine(" Where TKO_KodeIGR = '" & KDIGR & "' ")
+        sb.AppendLine("   And TKO_KodeOMI = '" & KodeToko & "' ")
+
+        IsiDR(sb.ToString, dr2, "GET HEADER CETAKAN")
+
+        While dr2.Read
+            NamaToko = dr2.Item(0)
+        End While
+        dr2.Close()
+        cn3.Close()
+
+        '----------------------'
+        '+ JALUR CETAK KERTAS +'
+        '----------------------'
+        f = "JALUR CETAK KERTAS"
+        '--++ 24-03-2014
+        sb = New StringBuilder
+        sb.AppendLine("INSERT INTO PBIDM_JALURKERTAS ")
+        sb.AppendLine("( ")
+        sb.AppendLine("  PBK_KODETOKO, ")
+        sb.AppendLine("  PBK_NOPB, ")
+        sb.AppendLine("  PBK_TGLPB, ")
+        sb.AppendLine("  PBK_NAMAGROUP, ")
+        sb.AppendLine("  PBK_KODERAK, ")
+        sb.AppendLine("  PBK_SUBRAK, ")
+        sb.AppendLine("  PBK_TIPERAK, ")
+        sb.AppendLine("  PBK_PLU, ")
+        sb.AppendLine("  PBK_NOURUT, ")
+        sb.AppendLine("  PBK_DESKRIPSI, ")
+        sb.AppendLine("  PBK_TAG, ")
+        sb.AppendLine("  PBK_QTY, ")
+        sb.AppendLine("  PBK_UNIT, ")
+        sb.AppendLine("  PBK_FRAC, ")
+        sb.AppendLine("  PBK_STOK, ")
+        sb.AppendLine("  PBK_CREATE_BY, ")
+        sb.AppendLine("  PBK_CREATE_DT ")
+        sb.AppendLine(") ")
+        sb.AppendLine("Select DISTINCT '" & KodeToko & "' as KODETOKO, ")
+        sb.AppendLine("       '" & noPB & "' as NoPB,  ")
+        sb.AppendLine("       TO_DATE('" & tglPB & "','DD-MM-YYYY') as TglPB, ")
+        sb.AppendLine("       GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as Subrak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       DESK, ")
+        sb.AppendLine("       PRD_KodeTag, ")
+        sb.AppendLine("       QTYK as ""ORDER"", ")
+        sb.AppendLine("       UNITKECIL, ")
+        sb.AppendLine("       FRACKECIL, ")
+        sb.AppendLine("       STOK, ")
+        sb.AppendLine("       '" & UserID & "', ")
+        sb.AppendLine("       CURRENT_DATE ")
+        sb.AppendLine("  From TEMP_JALURKERTAS_IDM, tbMaster_Prodmast   ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON  ")
+
+        ExecQRY(sb.ToString, "INSERT INTO PBIDM_JALURKERTAS")
+        '---- 24-03-2014
+
+        sb = New StringBuilder
+        sb.AppendLine("Select GRR_GroupRak as NamaGroup, ")
+        sb.AppendLine("       PLUKARTON as PLU, ")
+        sb.AppendLine("       LKS_KodeRak as KodeRak, ")
+        sb.AppendLine("       LKS_KodeSubRak as Subrak, ")
+        sb.AppendLine("       LKS_TipeRak as TipeRak, ")
+        sb.AppendLine("       LKS_NoUrut as NoUrut, ")
+        sb.AppendLine("       DESK, ")
+        sb.AppendLine("       PRD_KodeTag, ")
+        sb.AppendLine("       QTYK as ""ORDER"", ")
+        sb.AppendLine("       UNITKECIL ||' /'|| FRACKECIL as UNIT, ")
+        '--------------'
+        '+ 06-05-2013 +'
+        '--------------'
+        sb.AppendLine("       STOK ")
+        '--------------'
+        '- 06-05-2013 -'
+        '--------------'
+        sb.AppendLine("  From TEMP_JALURKERTAS_IDM, tbMaster_Prodmast   ")
+        sb.AppendLine(" Where REQ_ID = '" & IP & "' ")
+        sb.AppendLine("   And FDKCAB = '" & KodeToko & "' ")
+        sb.AppendLine("   And FDNOUO = '" & noPB & "' ")
+        sb.AppendLine("   And FDTGPB = to_date('" & tglPB & "','DD-MM-YYYY') ")
+        sb.AppendLine("   And PRD_PRDCD = PLUKARTON  ")
+        '--------------'
+        '+ 02-07-2013 +'
+        '--------------'
+        'If KDIGR = "20" Or KDIGR = "21" Then
+        '    sb.AppendLine("   And coalesce(PRD_FRAC,0) > 1 ")
+        'End If
+        '--------------'
+        '+ 02-07-2013 +'
+        '--------------'
+        sb.AppendLine(" Order By coalesce(GRR_GROUPRAK,'0'),LKS_KodeRak,LKS_KodeSubRak,LKS_TipeRak,LKS_NoUrut ")
+
+        IsiDT(sb.ToString, dtJalurCetakKertas, "ISI dtJalurCetakKertas", 6)
+
+        ds.JalurCetakKertas.Clear()
+        ds.JalurCetakKertas.Merge(dtJalurCetakKertas)
+
+        rptKertas.SetDataSource(ds)
+        rptKertas.SetParameterValue("NamaCabang", NamaCab)
+        rptKertas.SetParameterValue("NamaToko", NamaToko)
+        rptKertas.SetParameterValue("KodeToko", KodeToko)
+        rptKertas.SetParameterValue("Nopb", noPB)
+        rptKertas.SetParameterValue("Tglpb", tglPB)
+        rptKertas.SetParameterValue("Batch", CounterKecil)
+
+        Try
+            Dim CrExportOptions As ExportOptions
+            Dim CrDiskFileDestinationOptions As New _
+            DiskFileDestinationOptions()
+            Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                        "C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF"
+            'CrExportOptions = cryRpt.ExportOptions
+            CrExportOptions = rptKertas.ExportOptions
+            With CrExportOptions
+                .ExportDestinationType = ExportDestinationType.DiskFile
+                .ExportFormatType = ExportFormatType.PortableDocFormat
+                .DestinationOptions = CrDiskFileDestinationOptions
+                .FormatOptions = CrFormatTypeOptions
+            End With
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\")
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS") = False Then
+                System.IO.Directory.CreateDirectory("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS")
+            End If
+
+            If System.IO.File.Exists("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete("C:\TEMP\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKertas.Export()
+
+            '--------------'
+            '+ 23-01-2013 +'
+            '--------------'
+            CrDiskFileDestinationOptions.DiskFileName = _
+                                                    PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF"
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM")
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko) = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko)
+            End If
+
+            If System.IO.Directory.Exists(PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\") = False Then
+                System.IO.Directory.CreateDirectory(PathStruk & "\TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\")
+            End If
+
+            If System.IO.File.Exists(PathStruk & "TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF") Then
+                System.IO.File.Delete(PathStruk & "TEXT\IDM\" & KodeToko & "\CETAKAN_KERTAS\CETAKAN_KERTAS-" & tglPB & "-" & noPB & ".PDF")
+            End If
+
+            rptKertas.Export()
+            rptKertas.Dispose()
+            '--------------'
+            '- 23-01-2013 -'
+            '--------------'
+        Catch ex As Exception
+            MsgBox("CETAK ALL - " & f & ", ERROR = " & ex.ToString)
+        End Try
+
+        Application.DoEvents()
+        'progress.Value = 90
+
+        AdaProses = True
+        progress.Value = 100
+        Cursor = Cursors.Arrow
+        'rpt.PrintOptions.PrinterName = oPs.PrinterName
+        'rpt.PrintToPrinter(1, True, 1, 1)
+        'rpt.Dispose()
+    End Sub
+
+    Private Function CekTanggal(ByVal tgl As String) As Boolean
+        Try
+            If Len(tgl) = 10 And Mid(tgl, 3, 1) = "-" And Mid(tgl, 6, 1) = "-" _
+               And Char.IsDigit(Mid(tgl, 1, 1)) And Char.IsDigit(Mid(tgl, 1, 2)) _
+               And Char.IsDigit(Mid(tgl, 4, 1)) And Char.IsDigit(Mid(tgl, 5, 1)) _
+               And Char.IsDigit(Mid(tgl, 7, 1)) And Char.IsDigit(Mid(tgl, 8, 1)) _
+               And Char.IsDigit(Mid(tgl, 9, 1)) And Char.IsDigit(Mid(tgl, 10, 1)) Then
+                Return True
+            Else
+                Return False
+            End If
+        Catch ex As Exception
+            Return False
+        End Try
+    End Function

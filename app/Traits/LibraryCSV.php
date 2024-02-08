@@ -131,7 +131,7 @@ trait LibraryCSV
     }
 
     public function csv_to_array($file = null){
-        if (get_resource_type($file) == 'file' || get_resource_type($file) == 'stream') {
+        // if (get_resource_type($file) == 'file' || get_resource_type($file) == 'stream') {
 
             if (($open = fopen($file, "r")) !== FALSE) {
                 while (($data = fgetcsv($open, 0, "|")) !== FALSE) {
@@ -155,6 +155,6 @@ trait LibraryCSV
                 $new_data[]= call_user_func_array('array_merge', $temp_data);
             }
             return $new_data;
-        }
+        // }
     }
 }
