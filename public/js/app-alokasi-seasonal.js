@@ -30,10 +30,10 @@ $(document).ready(function(){
 });
 
 
-checkEmail =()=>{
+loadToko =()=>{
 
    $('#card-container').loading('toggle');
-   $.getJSON(link + "/api/email/check", function(data) {
+   $.getJSON(link + "/api/alokasi/seasonal/loadtoko", function(data) {
       if(!data.errors){
          $("#cc").val(data.data_email.cc)
          $("#password").val(data.data_email.pass)

@@ -39,6 +39,7 @@ Route::middleware(['mylogin'])->group(function () {
     Route::get('/monitoring/bytoko', [MonitoringController::class, 'index']);
     Route::get('/monitoring/byitem', [MonitoringController::class, 'index']);
     Route::get('/email', [EmailController::class, 'index']);
+    Route::get('/api/alokasi/seasonal/loadtoko', [EmailController::class, 'load_toko']);
     Route::get('/api/email/check', [EmailController::class, 'check_email']);
     Route::post('/api/email/edit', [EmailController::class, 'update']);
     Route::post('/api/email/add', [EmailController::class, 'store']);

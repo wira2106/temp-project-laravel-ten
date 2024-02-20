@@ -33,4 +33,7 @@ class AlokasiController extends Controller
     public function inde_khusus(){
         return view('alokasi.khusus.index');
     }
+    public function load_toko(Request $request){
+       
+    }
 }
