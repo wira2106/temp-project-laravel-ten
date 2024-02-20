@@ -1,0 +1,140 @@
+@extends('../../master')
+@section('content')
+
+    <script> $(".nav-item-home").addClass("active"); </script>
+   
+    <div class="container-fluid">
+        <div class="card shadow mb-4">
+            <div class="card-body" id="card-container">
+                    
+                <div class="container mt-5">
+
+
+                            <div class="card input-form">
+                                <div class="card-body">
+                                    <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data">
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-10">
+                                                <div class="form-group">
+                                                    <label for="kode_seasonal">Kode Seasonal</label>
+                                                    <div class="form-group">
+
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                                <select class="form-control select2 input-data by-plu" name="kode_seasonal" id="kode_seasonal" onchange="changeKodeSeasonal(this)">
+                                                                    <option value="" disabled selected>Pilih Kode Seasonal</option>
+                                                                
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control input-data by-plu" name="periode" id="periode">
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="kode_seasonal"style="color:white;">button</label>
+                                                <div class="form-group">
+                                                   <input type="hidden" class="form-control text" name="" value="Tarik Ulang DT9?">
+                                                   <button class="btn btn-sm btn-primary" type="submit"> Tarik Ulang DT9</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </form>
+
+                                </div>
+                            </div>
+                            <!-- <div class="card input-form by-plu">
+                                <div class="card-body">
+                                    <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data">
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-10">
+                                                <div class="form-group">
+                                                    <label for="kode_seasonal">Kode Seasonal</label>
+                                                    <div class="form-group">
+
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                                <select class="form-control select2 input-data by-plu" name="kode_seasonal" id="kode_seasonal" onchange="changeKodeSeasonal(this)">
+                                                                    <option value="" disabled selected>Pilih Kode Seasonal</option>
+                                                                
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control input-data by-plu" name="periode" id="periode">
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="kode_seasonal"style="color:white;">button</label>
+                                                <div class="form-group">
+                                                   <input type="hidden" class="form-control text" name="" value="Tarik Ulang DT9?">
+                                                   <button class="btn btn-sm btn-primary" type="submit"> Tarik Ulang DT9</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="desc">Desc</label>
+                                                    <textarea readonly class="form-control input-data by-plu" name="desc" id="desc" cols="30" rows="10"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="satuan">Satuan</label>
+                                                    <select multiple class="form-control select2 input-data by-plu" id="satuan" onchange="satuanSelected()" name="satuan[]">
+                                                        <option value="all">ALL</option>
+                                                        <option value="0 ctn">0 CTN</option>
+                                                        <option value="1 pcs">1 PCS</option>
+                                                        <option value="2 pcs">2 PCS</option>
+                                                        <option value="no pcs">No PCS</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="prdcd">Qty</label>
+                                                    <input type="number" class="form-control input-data by-plu" name="qty" id="qty">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row d-flex justify-content-center">
+                                            <div class="col-md-12">
+                                                <div class="form-group d-flex justify-content-center">
+                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakin insert ke database?">
+                                                   <button class="btn btn-sm btn-primary" type="submit"> Insert Ke Database</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div> -->
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="{{asset('js/app-label.js')}}"></script> -->
+    <script src="{{asset('js/app-alokasi-seasonal.js')}}"></script>
+    <script src="{{asset('js/app-submitForm.js')}}"></script>
+    <script src="{{asset('js/app-submitForm2.js')}}"></script>
+    <script src="{{asset('js/app-hapus.js')}}"></script>
+@endsection

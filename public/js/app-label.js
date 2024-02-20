@@ -49,7 +49,7 @@ $(document).ready(function(){
 
 toggleInput =(nameClass)=>{
 
-   $('#label-tag').loading('toggle');
+   $('#card-container').loading('toggle');
    let className = '.'+nameClass;
    
    $('.input-form').hide();
@@ -57,7 +57,7 @@ toggleInput =(nameClass)=>{
    $(className).prop('disabled',false);
    $(className).show();
 
-   $('#label-tag').loading('toggle');
+   $('#card-container').loading('toggle');
 
 }
 
@@ -91,13 +91,13 @@ satuanSelected=()=>{
    
 }
 changePRDCD=()=>{
-   $('#label-tag').loading('toggle');
+   $('#card-container').loading('toggle');
 
    let prdcd = $("#prdcd").val(),
        dataMasterProduk = listMasterProduk[prdcd];
        $("#desc").val(dataMasterProduk.deskripsi);
    
-   $('#label-tag').loading('toggle');
+   $('#card-container').loading('toggle');
 }
 
 updateSelect2Options=()=>{
