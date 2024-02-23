@@ -35,12 +35,28 @@ Route::middleware(['mylogin'])->group(function () {
     Route::post('insert-user', [HomeController::class, 'insertUser']);
     
     Route::get('/home/alokasi/seasonal', [AlokasiController::class, 'index']);
-    Route::get('/home/alokasi/khusus', [AlokasiController::class, 'inde_khusus']);
+    Route::get('/home/alokasi/khusus', [AlokasiController::class, 'index_khusus']);
+
+    Route::get('/api/alokasi/seasonal/loadseasonal', [AlokasiController::class, 'alokasi_seasonal_load']);
+    Route::get('/api/alokasi/seasonal/loadtoko', [AlokasiController::class, 'load_toko']);
+    Route::get('/api/alokasi/seasonal/loadplu', [AlokasiController::class, 'load_plu']);
+    
+    Route::get('/api/alokasi/khusus/loadtoko', [AlokasiController::class, 'alokasi_khusus_load']);
+    Route::get('/api/alokasi/khusus/loadplu', [AlokasiController::class, 'get_list_plu']);
+
+    Route::get('/api/monitoring/toko/loadPeriodeToko', [MonitoringController::class, 'load_periode_toko']);
+    Route::get('/api/monitoring/toko/loadData', [MonitoringController::class, 'load_data_by_toko']);
+
+    Route::get('/api/monitoring/item/loadPeriodePlu', [MonitoringController::class, 'load_periode_plu']);
+    Route::get('/api/monitoring/item/loadData', [MonitoringController::class, 'load_data_by_toko']);
+    
     Route::get('/monitoring/bytoko', [MonitoringController::class, 'index']);
-    Route::get('/monitoring/byitem', [MonitoringController::class, 'index']);
+    Route::get('/monitoring/byitem', [MonitoringController::class, 'index_byitem']);
     Route::get('/email', [EmailController::class, 'index']);
-    Route::get('/api/alokasi/seasonal/loadtoko', [EmailController::class, 'load_toko']);
     Route::get('/api/email/check', [EmailController::class, 'check_email']);
+    
+    Route::post('/api/alokasi/KirimPBSeasonal', [AlokasiController::class, 'kirim_pb_seasonal']);
+    Route::post('/api/alokasi/KirimPBKhusus', [AlokasiController::class, 'kirim_pb_khusus']);
     Route::post('/api/email/edit', [EmailController::class, 'update']);
     Route::post('/api/email/add', [EmailController::class, 'store']);
 });

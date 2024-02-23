@@ -63,13 +63,13 @@ class EmailController extends Controller
                     $data_email = $this->DB_PGSQL
                            ->table("master_email_cabang")
                            ->insert([
-                            "mec_mail_server" => $request->servers,
-                            "mec_mail_port" => $request->port,
-                            "mec_mail_user" => $request->email,
-                            "mec_mail_pass" => $request->password,
-                            "mec_to" => $request->to,
-                            "mec_cc" => $request->cc,
-                            "mec_subject" => $request->subject,
+                                "mec_mail_server" => $request->servers,
+                                "mec_mail_port" => $request->port,
+                                "mec_mail_user" => $request->email,
+                                "mec_mail_pass" => $request->password,
+                                "mec_to" => $request->to,
+                                "mec_cc" => $request->cc,
+                                "mec_subject" => $request->subject,
                            ]);
 
             

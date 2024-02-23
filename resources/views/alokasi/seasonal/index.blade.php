@@ -1,6 +1,48 @@
 @extends('../../master')
 @section('content')
+    <style>
+        /* Add your styling table_omi */
+        #table_omi {
+            border-collapse: collapse;
+            width: 100%;
+        }
 
+        #table_omi th,
+        #table_omi td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #table_omi th {
+            background-color: #f2f2f2;
+        }
+
+        #table_omi tbody tr.selected {
+            background-color: #a6e7ff; /* Change the background color when selected */
+        }
+        /* Add your styling table_plu_seasonal */
+        #table_plu_seasonal {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #table_plu_seasonal th,
+        #table_plu_seasonal td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #table_plu_seasonal th {
+            background-color: #f2f2f2;
+        }
+
+        #table_plu_seasonal tbody tr.selected {
+            background-color: #a6e7ff; /* Change the background color when selected */
+        }
+
+    </style>
     <script> $(".nav-item-home").addClass("active"); </script>
    
     <div class="container-fluid">
@@ -11,7 +53,7 @@
 
                         <div class="card input-form">
                             <div class="card-body">
-                                <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data">
+                                <form action="{{url('/')}}" method="post" class="form_data">
                                     <div class="row d-flex justify-content-center">
                                         <div class="col-md-10">
                                             <div class="form-group">
@@ -20,13 +62,13 @@
 
                                                     <div class="row">
                                                         <div class="col-6">
-                                                            <select class="form-control select2 input-data by-plu" name="kode_seasonal" id="kode_seasonal" onchange="changeKodeSeasonal(this)">
+                                                            <select class="form-control select2" name="kode_seasonal" id="kode_seasonal" onchange="changeKodeSeasonal(this.value)" disabled>
                                                                 <option value="" disabled selected>Pilih Kode Seasonal</option>
                                                             
                                                             </select>
                                                         </div>
                                                         <div class="col-6">
-                                                            <input type="text" class="form-control input-data by-plu" name="periode" id="periode">
+                                                            <input type="text" class="form-control input-data by-plu" placeholder="Periode" name="periode" id="periode" disabled>
                                                         </div>
                                                     </div>
 
@@ -37,7 +79,8 @@
                                             <label for="kode_seasonal"style="color:white;">button</label>
                                             <div class="form-group">
                                                 <input type="hidden" class="form-control text" name="" value="Tarik Ulang DT9?">
-                                                <button class="btn btn-sm btn-primary" type="submit"> Tarik Ulang DT9</button>
+                                                <!-- <button class="btn btn-sm btn-primary" type="submit"> Tarik Ulang DT9</button> -->
+                                                <button class="btn btn-sm btn-primary" onclick="loadSeasonal()"> Tarik Ulang DT9</button>
                                             </div>
                                         </div>
                                     </div>
@@ -49,6 +92,9 @@
                         <div class="row my-5">
                             <div class="col-md-5">
                                 <div class="card list-label ">
+                                    <div class="card-header">
+                                        Toko OMI
+                                    </div>
                                     <div class="card-body">
                                             <!-- ============================ -->
                                             <!--             Table            -->
@@ -76,6 +122,9 @@
                             </div>
                             <div class="col-md-7">
                                 <div class="card list-label ">
+                                    <div class="card-header">
+                                        PLU Seasonal
+                                    </div>
                                     <div class="card-body">
                                             <!-- ============================ -->
                                             <!--             Table            -->
@@ -84,7 +133,7 @@
                                                 <table class="table table-bordered" id="table_plu_seasonal">
                                                 <thead>
                                                     <tr>
-                                                    <th style="min-width: 100px;" scope="col">PLU</th>
+                                                    <th style="min-width: 100px;" scope="col" colspan="2">PLU</th>
                                                     <th style="min-width: 100px;" scope="col">Deskripsi</th>
                                                     <th style="min-width: 100px;" scope="col">Qty Alokasi</th>
                                                     <th style="min-width: 100px;" scope="col">Qty Pemenuhan</th>

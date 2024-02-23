@@ -53,22 +53,26 @@
 
                         <div class="card input-form">
                             <div class="card-body">
-                                <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data">
+                                <!-- <form action="{{url('/api/insert/byplu')}}" method="post" class="form_data"> -->
                                     <div class="row d-flex justify-content-center">
                                         <div class="col-md-10">
                                             <div class="form-group">
-                                                <label for="kode_toko">Toko OMI</label>
                                                 <div class="form-group">
 
+                                                    <div class="row mb-2">
+                                                        <div class="col-sm-12">
+                                                            <input type="text" class="form-control form-control-sm input-data by-plu" placeholder="Periode" name="periode" id="periode">
+                                                        </div>
+                                                    </div>
                                                     <div class="row">
                                                         <div class="col-sm-6">
-                                                            <select class="form-control select2" name="kode_toko" id="kode_toko" onchange="changeKodeToko(this.value)" disabled>
-                                                                <option value="" disabled selected>Pilih Kode Toko</option>
+                                                            <select class="form-control select2" name="kode_plu" id="kode_plu" onchange="changeKodePlu(this.value)" disabled>
+                                                                <option value="" disabled selected>Pilih Kode PLU</option>
                                                             
                                                             </select>
                                                         </div>
                                                         <div class="col-sm-6">
-                                                            <input type="text" class="form-control form-control-sm input-data by-plu" placeholder="Nama OMI" name="omi" id="omi" disabled>
+                                                            <input type="text" class="form-control form-control-sm input-data by-plu" placeholder="Nama PLU" name="omi" id="omi" readonly disabled>
                                                         </div>
                                                     </div>
 
@@ -78,41 +82,42 @@
                                         <div class="col-md-2">
                                             <label for="kode_seasonal"style="color:white;">button</label>
                                             <div class="form-group">
-                                                <input type="hidden" class="form-control text" name="" value="Tarik Ulang DT9?">
+                                                <input type="hidden" class="form-control text" name="" value="Load Data?">
                                                 <!-- <button class="btn btn-sm btn-primary" type="submit"> Tarik Ulang DT9</button> -->
-                                                <button class="btn btn-sm btn-primary" onclick="loadSeasonal()"> Tarik Ulang DT9</button>
+                                                <button class="btn btn-sm btn-primary" type="button" onclick="loadData()"> Load Data</button>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                </form>
+                                <!-- </form> -->
 
                             </div>
                         </div>
-                        <div class="row my-5 d-flex justify-content-center">
-                           
-                            <div class="col-md-7">
+                        <div class="row my-5 d-flex justify-content-center">                           
+                            <div class="col-md-8">
                                 <div class="card list-label ">
-                                    <div class="card-header">
+                                    <!-- <div class="card-header">
                                         PLU Seasonal
-                                    </div>
+                                    </div> -->
                                     <div class="card-body">
                                             <!-- ============================ -->
                                             <!--             Table            -->
                                             <!-- ============================ -->
                                             <input type="text" placeholder="Search" class="form-control form-control-sm" name="search" id="searchInput">
                                             <div class="table-container" id="">
-                                                <table class="table table-bordered" id="table_plu_khusus">
+                                                <table class="table table-bordered" id="table_byitem">
                                                 <thead>
                                                     <tr>
                                                     <th style="min-width: 100px;" scope="col">PLU</th>
                                                     <th style="min-width: 100px;" scope="col">Deskripsi</th>
-                                                    <th style="min-width: 100px;" scope="col">Minor</th>
-                                                    <th style="min-width: 100px;" scope="col">Qty Alokasi</th>
+                                                    <th style="min-width: 100px;" scope="col">Alokasi</th>
+                                                    <th style="min-width: 100px;" scope="col">Pemenuhan</th>
+                                                    <th style="min-width: 100px;" scope="col">%</th>
+                                                    <th style="min-width: 100px;" scope="col">Sisa</th>
                                                     <!-- Add more headers as needed -->
                                                     </tr>
                                                 </thead>
-                                                <tbody id="table-content-plu-khusus">
+                                                <tbody id="table-content-byitem">
                                                     
                                                 </tbody>
                                                 </table>
@@ -124,40 +129,6 @@
                                 </div>
                             </div>
                         </div>
-                            
-                            <div class="card input-form">
-                                <div class="card-body">
-                                    <div class="form-group">
-                                        <label>Pilihan folder dengan file csv:</label>
-
-                                        <form action="{{url('/api/tarik/data')}}" method="post" id="form_data">
-                                            @csrf
-                                            <div class="row  d-flex justify-content-center">
-                                                <div class="col-md-8">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="file" name="file" value="" webkitdirectory directory multiple > -->
-                                                    </div>
-
-                                                    <div class="file">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <div class="form-group d-flex justify-content-center">
-                                                        <button class="btn btn-sm btn-primary mr-1" type="button" onclick="KirimPBKhusus(this)"> Kirim PB Khusus</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row d-flex justify-content-center">
-                                            </div>
-                                        </form>
-
-                                    </div>
-
-                                </div>
-                            </div>
-
-
                 </div>
 
             </div>
@@ -165,7 +136,7 @@
     </div>
 
     <!-- <script src="{{asset('js/app-label.js')}}"></script> -->
-    <script src="{{asset('js/app-alokasi-khusus.js')}}"></script>
+    <script src="{{asset('js/app-monitoring-by-item.js')}}"></script>
     <script src="{{asset('js/app-submitForm.js')}}"></script>
     <script src="{{asset('js/app-submitForm2.js')}}"></script>
     <script src="{{asset('js/app-hapus.js')}}"></script>
