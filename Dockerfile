@@ -25,7 +25,7 @@ RUN docker-php-ext-configure oci8 --with-oci8=instantclient,/opt/oracle/instantc
 
 RUN set -ex \
   && apk --no-cache add \
-    postgresql-dev
+    postgresql-dev \
 
 RUN docker-php-ext-install pdo pdo_pgsql
     

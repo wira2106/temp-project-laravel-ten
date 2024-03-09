@@ -31,5 +31,11 @@ Route::middleware(['mylogin'])->group(function () {
     Route::get('cetak', [LabelController::class, 'cetak']);
     Route::post('get-user', [HomeController::class, 'getUser']);
     Route::post('insert-user', [HomeController::class, 'insertUser']);
+
+
+    Route::get('/api/tampil/data', [MonitoringCheckerMobileController::class, 'tampil']);
+    Route::get('/api/selected/struk/data', [MonitoringCheckerMobileController::class, 'selected_struk']);
+    Route::get('/api/selected/dv1/data', [MonitoringCheckerMobileController::class, 'selected_dv1']);
+    Route::get('/api/diluar/struk/data', [MonitoringCheckerMobileController::class, 'tampil_diluar_struk']);
     
 });
