@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InitialSOController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
@@ -26,9 +27,14 @@ Route::get('/logout', [LoginController::class, 'logout']);
 
 Route::middleware(['mylogin'])->group(function () {
     //HOME
-    Route::get('home', [LabelController::class, 'index']);
-    Route::get('cetak', [LabelController::class, 'cetak']);
-    Route::post('get-user', [HomeController::class, 'getUser']);
-    Route::post('insert-user', [HomeController::class, 'insertUser']);
+    Route::get('home', [InitialSOController::class, 'index']);
+    Route::get('api/data/plu', [InitialSOController::class, 'get_plu']);
+    Route::post('api/insert/byplu', [InitialSOController::class, 'store_plu']);
+    Route::post('api/insert/byrak', [InitialSOController::class, 'store_rak']);
+    Route::post('api/delete/byplu', [InitialSOController::class, 'delete_plu']);
+    Route::post('api/delete/byrak', [InitialSOController::class, 'delete_rak']);
+    // Route::get('cetak', [LabelController::class, 'cetak']);
+    // Route::post('get-user', [HomeController::class, 'getUser']);
+    // Route::post('insert-user', [HomeController::class, 'insertUser']);
     
 });
