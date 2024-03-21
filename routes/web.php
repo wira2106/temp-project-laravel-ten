@@ -29,6 +29,7 @@ Route::middleware(['mylogin'])->group(function () {
     //HOME
     Route::get('home', [InitialSOController::class, 'index']);
     Route::get('api/data/plu', [InitialSOController::class, 'get_plu']);
+    Route::get('api/check/data', [InitialSOController::class, 'data_input']);
     Route::post('api/insert/byplu', [InitialSOController::class, 'store_plu']);
     Route::post('api/insert/byrak', [InitialSOController::class, 'store_rak']);
     Route::post('api/delete/byplu', [InitialSOController::class, 'delete_plu']);

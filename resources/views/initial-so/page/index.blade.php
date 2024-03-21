@@ -67,10 +67,10 @@
                                         <div class="row d-flex justify-content-center">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="prdcd">PRDCD/Barcode</label>
+                                                    <label for="prdcd">PRDCD</label>
                                                     <div class="form-group">
                                                         <select class="form-control select2 input-data by-plu" name="prdcd" id="prdcd" onchange="changePRDCD(this)">
-                                                            <option value="" disabled selected>Pilih PRDCD/Barcode</option>
+                                                            <option value="" disabled selected>Pilih PRDCD</option>
                                                         
                                                         </select>
                                                     </div>
@@ -91,10 +91,10 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="satuan">Kategori</label>
-                                                    <select class="form-control select2 input-data by-plu" name="kategori">
-                                                        <option value="all">ALL</option>
-                                                        <option value="fast">Fast Moving</option>
-                                                        <option value="slow">Slow Moving</option>
+                                                    <select class="form-control select2 input-data by-plu kategori" name="kategori" onchange="changePRDCD(this)">
+                                                        <option value="">ALL</option>
+                                                        <option value="fast moving">Fast Moving</option>
+                                                        <option value="slow moving">Slow Moving</option>
                                                     </select>
                                                 </div>
                                             </div>

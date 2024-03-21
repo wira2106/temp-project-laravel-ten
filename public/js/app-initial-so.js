@@ -65,73 +65,22 @@ toggleInput =(nameClass,deleteVar)=>{
 
 }
 
-satuanSelected=()=>{
-
-   let selectMultiple  = $("#satuan")
-       value =  selectMultiple.val();
-
-       selectMultiple.find('option[value="all"]').prop('disabled', false);
-       selectMultiple.find('option[value="0 ctn"]').prop('disabled', false);
-       selectMultiple.find('option[value="1 pcs"]').prop('disabled', false);
-       selectMultiple.find('option[value="2 pcs"]').prop('disabled', false);
-
-      value.forEach(element => {
-         console.log(element);
-         if(element == 'all'){
-            selectMultiple.find('option[value="all"]').prop('disabled', false);
-            selectMultiple.find('option[value="0 ctn"]').prop('disabled', true);
-            selectMultiple.find('option[value="1 pcs"]').prop('disabled', true);
-            selectMultiple.find('option[value="2 pcs"]').prop('disabled', true);
-            selectMultiple.find('option[value="no pcs"]').prop('disabled', true);
-         }else{
-            selectMultiple.find('option[value="all"]').prop('disabled', true);
-            selectMultiple.find('option[value="0 ctn"]').prop('disabled', false);
-            selectMultiple.find('option[value="1 pcs"]').prop('disabled', false);
-            selectMultiple.find('option[value="2 pcs"]').prop('disabled', false);
-            selectMultiple.find('option[value="no pcs"]').prop('disabled', false);
-         }
-         
-      });
-   
-}
 changePRDCD=(data)=>{
-   $('#label-tag').loading('toggle');
 
    let prdcd = $("#prdcd").val();
 
    view(prdcd,null);
    
-   $('#label-tag').loading('toggle');
 }
 
-updateSelect2Options=()=>{
-   const select1 = document.getElementById("select1");
-   const select2 = document.getElementById("select2");
-   $('#select2').prop('disabled',false);
-   // Clear existing options
-   select2.innerHTML = '';
-
-   // Get the selected value from Select 1
-   const selectedValue = parseInt(select1.value);
-
-   // Populate options for Select 2 based on the selected value in Select 1
-   for (let i = 1; i <= 10; i++) {
-     // Add an option only if it's greater than the selected value in Select 1
-     if (i > selectedValue) {
-       const option = document.createElement("option");
-       option.value = i;
-       option.text = `${i}`;
-       select2.appendChild(option);
-     }
-   }
- }
 
 getDataPlu =()=>{
    let select = "";
        listMasterProduk = [];
+
+   $('#label-tag').loading('toggle');
    $.getJSON(link + "/api/data/plu", function(data) {
-console.log(data)
-      // list select cabang
+     
       if(data){
          $.each(data,function(key,value){
                select+=` <option value="${value.prdcd}" >(${value.prdcd})</option>`;
@@ -143,36 +92,32 @@ console.log(data)
 
    })
 
+   $('#label-tag').loading('toggle');
+
 }
 
 view =(prdcd = null,rak = null)=>{
    reset_selected();
 
-   $('#table_member tbody').loading('toggle');
-
    let select = "",
-       param = "";
+       param = "",
+       kategori=null;
        listCabang = [];
+
+       kategori = $(".kategori").val();
        if (prdcd) {
          param = "prdcd="+prdcd;
       } else {
           param = "rak="+rak;
          
        }
-   $.getJSON(link + "/api/plu/data?"+param, function(data) {
-      
-      // list select cabang
-      if(data.dataCabang){
-         $.each(data.dataCabang,function(key,value){
-             select+=` <option value="${value.id}" >${value.cabang}</option>`;
-             listCabang[value.id] = value;
+       param = param+"&kategori="+kategori;
+   $.getJSON(link + "/api/check/data?"+param, function(data) {
 
-         });
-         $("#kode_cabang").append(select);
-     }
-
+   $('#label-tag').loading('toggle');
+      // console.log(data)
      // list data member
-      $.each(data.data,function(key,value) {
+      $.each(data,function(key,value) {
          field+=`
                   <tr>
                         <td scope="row">${value.kode_cabang}</td>
@@ -185,7 +130,6 @@ view =(prdcd = null,rak = null)=>{
       });
    }).done(function() {
 
-      $('#table_member tbody').loading('toggle');
       $("#table-content").html(field);
       page++
    }); 
