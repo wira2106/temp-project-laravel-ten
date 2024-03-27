@@ -1,5 +1,28 @@
 @extends('../../master')
 @section('content')
+    <style>
+        /* Add your styling table_plu_seasonal */
+        #table_plu {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #table_plu th,
+        #table_plu td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #table_plu th {
+            background-color: #f2f2f2;
+        }
+
+        #table_plu tbody tr.selected {
+            background-color: #a6e7ff; /* Change the background color when selected */
+        }
+
+    </style>
 
     <script> $(".nav-item-home").addClass("active"); </script>
    
@@ -173,7 +196,7 @@
                                 </div>
                             </div>
 
-                            <div class="card list-label ">
+                            <div class="card list-plu ">
                                 <div class="card-header">
                                     Label
                                 </div>
@@ -182,39 +205,15 @@
                                         <!--             Table            -->
                                         <!-- ============================ -->
                                         <div class="table-container" id="scrollContainer">
-                                            <table class="table table-bordered" id="table_cabang">
+                                            <table class="table table-bordered" id="table_plu">
                                             <thead>
                                                 <tr>
-                                                <th style="min-width: 100px;" scope="col">lpadd</th>
-                                                <th style="min-width: 100px;" scope="col">prdcd</th>
-                                                <th style="min-width: 100px;" scope="col">kplu</th>
-                                                <th style="min-width: 100px;" scope="col">Nama 1</th>
-                                                <th style="min-width: 100px;" scope="col">Nama 2</th>
-                                                <th style="min-width: 100px;" scope="col">Barc</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 1</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 2</th>
-                                                <th style="min-width: 100px;" scope="col">Jml 3</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 1</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 2</th>
-                                                <th style="min-width: 100px;" scope="col">Unit 3</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 1</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 2</th>
-                                                <th style="min-width: 150px;" scope="col">Price All 3</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 1</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 2</th>
-                                                <th style="min-width: 150px;" scope="col">Price Unit 3</th>
-                                                <th style="min-width: 100px;" scope="col">Fmbsts</th>
-                                                <th style="min-width: 100px;" scope="col">Flag</th>
-                                                <th style="min-width: 100px;" scope="col">Lokasi</th>
-                                                <th style="min-width: 100px;" scope="col">Fmkdsb</th>
-                                                <th style="min-width: 150px;" scope="col">Status ppn</th>
-                                                <th style="min-width: 100px;" scope="col">Tempo 1</th>
-                                                <th style="min-width: 100px;" scope="col">Tempo 2</th>
-                                                <th style="min-width: 100px;" scope="col">Tgl Insert</th>
-                                                <th style="min-width: 100px;" scope="col">Irec</th>
-                                                <th style="min-width: 100px;" scope="col">Div</th>
-                                                <th style="min-width: 100px;" scope="col">Dept</th>
-                                                <th style="min-width: 100px;" scope="col">Katb</th>
+                                                <th style="min-width: 100px;" scope="col" colspan="2">PLU</th>
+                                                <th style="min-width: 100px;" scope="col">RECORDID</th>
+                                                <th style="min-width: 100px;" scope="col">SUBRAK</th>
+                                                <th style="min-width: 100px;" scope="col">DESKRIPSI</th>
+                                                <th style="min-width: 100px;" scope="col">UNIT</th>
+                                                <th style="min-width: 100px;" scope="col">TAG</th>
                                                 <!-- Add more headers as needed -->
                                                 </tr>
                                             </thead>

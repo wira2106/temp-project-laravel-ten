@@ -338,7 +338,7 @@
                                 </div>
                             </div>
 
-                            <div class="card list-label ">
+                            <div class="card list-plu ">
                                 <div class="card-header">
                                     Label
                                 </div>

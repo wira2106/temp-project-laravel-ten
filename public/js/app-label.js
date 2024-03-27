@@ -34,7 +34,7 @@ $(document).ready(function(){
       });
 
       $('.input-data').prop('disabled',true);
-      $('.list-label').hide();
+      $('.list-plu').hide();
       $('.input-form').hide();
       $('.select2').select2({
          allowClear: false

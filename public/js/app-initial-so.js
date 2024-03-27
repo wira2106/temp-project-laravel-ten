@@ -1,6 +1,7 @@
 let selectedTable,
     selectedData  =  [],
-    dataMember =[],
+    dataPLU =[],
+    listPLU =[],
     listMasterProduk = [],
     search  =  false,
     page = 1,
@@ -8,35 +9,36 @@ let selectedTable,
     cabang = null;
 
 $(document).ready(function(){
-      // $('#table_cabang tbody').on('click', 'tr', function () {
+
+   /**
+    * table_plu
+    */
+      $('#table_plu input[type="checkbox"]').click(function () {
+            // Toggle the 'selected' class on the parent row
+            $(this).closest('tr').toggleClass('selected-row', this.checked);
+      });
+      $('#table_plu tbody').on('click', 'tr', function () {
+
+         $(this).toggleClass('selected-row');
+         selectedTablePLU = $(this).find('td').map(function (data) {
+               return $(this).text();
+         }).get();
+         $(this).find('input[type="checkbox"]').prop('checked', function (i, oldProp) {
+            if ($(this).is(':checked')) {
+               addPlu(selectedTablePLU[1],false)
+         } else {
+               addPlu(selectedTablePLU[1],true)
+         }
+            return !oldProp;
+         });
          
-      //    // Remove the 'selected-row' class from all rows
-      //    $('#table_cabang tbody tr').removeClass('selected-row');
 
-      //    // Add the 'selected-row' class to the clicked row
-      //    $(this).addClass('selected-row');
-               
-      //    // Get Text in field data
-      //    selectedTable = $(this).find('td').map(function (data) {
-      //          return $(this).text();
-      //    }).get();
-         
-      //    selectedValue(selectedTable[1]);
-
-      // });
-
-      // $('#scrollContainer').on('scroll', function () {
-      //    var container = $(this);
-      //    if (container.scrollTop() + container.innerHeight() >= container[0].scrollHeight) {
-      //    // Load more data when scrolled to the bottom
-      //    // view();
-      //    }
-      // });
+      });
 
 
 
       $('.input-data').prop('disabled',true);
-      $('.list-label').hide();
+      $('.list-plu').hide();
       $('.input-form').hide();
       $('.select2').select2({
          allowClear: false
@@ -47,6 +49,7 @@ $(document).ready(function(){
          todayHighlight: true
       });
       getDataPlu();
+      getDataRak();
       $("#by-plu").prop("checked", true);
       toggleInput('by-plu')
 });
@@ -96,13 +99,35 @@ getDataPlu =()=>{
 
 }
 
+getDataRak =()=>{
+   let select = "";
+       listMasterProduk = [];
+
+   $('#label-tag').loading('toggle');
+   $.getJSON(link + "/api/data/rak", function(data) {
+     
+      if(data){
+         $.each(data,function(key,value){
+               select+=` <option value="${value.prdcd}" >(${value.prdcd})</option>`;
+               listMasterProduk[value.prdcd] = value;
+
+         });
+         $("#sub-rak").append(select);
+      }
+
+   })
+
+   $('#label-tag').loading('toggle');
+
+}
+
 view =(prdcd = null,rak = null)=>{
-   reset_selected();
+   // reset_selected();
 
    let select = "",
        param = "",
        kategori=null;
-       listCabang = [];
+       dataPLU = [];
 
        kategori = $(".kategori").val();
        if (prdcd) {
@@ -112,50 +137,52 @@ view =(prdcd = null,rak = null)=>{
          
        }
        param = param+"&kategori="+kategori;
-   $.getJSON(link + "/api/check/data?"+param, function(data) {
 
-   $('#label-tag').loading('toggle');
-      // console.log(data)
-     // list data member
-      $.each(data,function(key,value) {
-         field+=`
-                  <tr>
-                        <td scope="row">${value.kode_cabang}</td>
-                        <td>${value.kode_member}</td>
-                        <td>${value.nama}</td>
-                        <td>${value.alamat_ktp}</td>
-                  </tr>
-               `;
-               dataMember[value.kode_member] = value;
-      });
-   }).done(function() {
+      $('#label-tag').loading('toggle');
+      $.getJSON(link + "/api/check/data?"+param, function(data) {
+      // list data member
+         $.each(data,function(key,value) {
+            field+=`
+                     <tr>
 
-      $("#table-content").html(field);
-      page++
-   }); 
+                           <td><input type="checkbox" value="1"></td>
+                           <td scope="row">${value.temp_plu?value.temp_plu:'-'}</td>
+                           <td>${value.temp_recordid?value.temp_recordid:'-'}</td>
+                           <td>${value.temp_subrak?value.temp_subrak:'-'}</td>
+                           <td>${value.prd_deskripsipanjang?value.prd_deskripsipanjang:'-'}</td>
+                           <td>${value.prd_unit?value.prd_unit:'-'}</td>
+                           <td>${value.prd_kodetag?value.prd_kodetag:'-'}</td>
+                     </tr>
+                  `;
+                  dataPLU[value.kode_member] = value;
+         });
+      }).fail(function(jqXHR, textStatus, errorThrown) {
+         // Error callback
+         Swal.fire({
+            title: 'Gagal',
+            html: jqXHR.responseJSON.messages,
+            icon: 'warning',
+            allowOutsideClick: false,
+            onOpen: () => {
+                    swal.hideLoading()
+            }
+        });
+
+         $('#label-tag').loading('toggle');
+     }).done(function() {
+         $(".list-plu").show();
+         $('#label-tag').loading('toggle');
+         $("#table-content").html(field);
+      }); 
 
 }
 
-
-
-add =(data)=>{
-   $('#form_data').attr('action',link+'/api/add');
-   $('.text').val('Tambah')
-   $('#form_data').submit();
-}
-
-update =(data)=>{
-   $('#form_data').attr('action',link+'/api/update');
-   $('.text').val('Edit')
-   $('#form_data').submit();
-}
-
-pencarian=()=>{
-   reset_selected();
-}
+// pencarian=()=>{
+//    reset_selected();
+// }
 
 selectedValue =(kode_member)=>{
-   selectedData  = dataMember[kode_member];
+   selectedData  = dataPLU[kode_member];
 }
 
 reset_selected=()=>{
@@ -167,4 +194,26 @@ reset_selected=()=>{
       view();
    }
 
+}
+
+addPlu=(plu,status)=>{
+   if (status) {
+      listPLU.push(plu)
+      
+   } else {
+      // remove array by value
+      Array.prototype.remove = function() {
+         var what, a = arguments, L = a.length, ax;
+         while (L && this.length) {
+             what = a[--L];
+             while ((ax = this.indexOf(what)) !== -1) {
+                 this.splice(ax, 1);
+             }
+         }
+         return this;
+     };
+      listPLU.remove(plu)
+
+      
+   }
 }

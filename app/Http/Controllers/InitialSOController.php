@@ -30,6 +30,22 @@ class InitialSOController extends Controller
     }
     public function get_plu(){
         $data_master_produk = $this->DB_PGSQL->table("tbmaster_lokasi")
+                                ->join("tbmaster_prodmast",function($join){
+                                    $join->on("lks_prdcd" ,"=" ,"prd_prdcd");
+                                })
+                               ->selectRaw("
+                                    lks_prdcd as prdcd
+                               ")
+                               ->distinct()
+                               ->orderBy($this->DB_PGSQL->raw("lks_prdcd"))
+                               ->get();
+        return $data_master_produk;
+    }
+    public function get_rak(){
+        $data_master_produk = $this->DB_PGSQL->table("tbmaster_lokasi")
+                                ->join("tbmaster_prodmast",function($join){
+                                    $join->on("lks_prdcd" ,"=" ,"prd_prdcd");
+                                })
                                ->selectRaw("
                                     lks_prdcd as prdcd
                                ")
@@ -40,31 +56,27 @@ class InitialSOController extends Controller
     }
 
     public function data_input(Request $request){
-        try {
-            $this->DB_PGSQL->beginTransaction();
-            
-            if ($request->prdcd) {
-                 $this->insert_temp_plu("prdcd",$request->prdcd);
-            } else {
-                 $this->insert_temp_plu("rak",$request->rak);
-            }
 
-            $this->DB_PGSQL->commit();
-        } catch (\Throwable $th) {
-            
-            $this->DB_PGSQL->rollBack();
-            // dd($th);
-            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+        if ($request->prdcd) {
+                $response = $this->insert_temp_plu("prdcd",$request->prdcd);
+                if ($response['errors']) {
+                return response()->json($response,500);
+                }
+        } else {
+                $response = $this->insert_temp_plu("rak",$request->rak);
+                if ($response['errors']) {
+                return response()->json($response,500);
+                }
         }
        
         $data = $this->DB_PGSQL->table("tbtr_tempso")
                         ->selectRaw("
-                            TEMP_PLU, 
-                            TEMP_RECORDID, 
-                            COALESCE(TEMP_SUBRAK, 'BYPLU') AS TEMP_SUBRAK, 
-                            PRD_PRDCD, 
-                            PRD_DESKRIPSIPANJANG, 
-                            PRD_UNIT || '/' || PRD_FRAC AS PRD_UNIT, 
+                            TEMP_PLU,
+                            TEMP_RECORDID,
+                            COALESCE(TEMP_SUBRAK, 'BYPLU') AS TEMP_SUBRAK,
+                            PRD_PRDCD,
+                            PRD_DESKRIPSIPANJANG,
+                            PRD_UNIT || '/' || PRD_FRAC AS PRD_UNIT,
                             PRD_KODETAG 
                         ")
                         ->join("tbmaster_prodmast",function($join){
@@ -93,21 +105,20 @@ class InitialSOController extends Controller
         $subrak = "";
         if ($tipe == "prdcd") {
             $check_data = $this->DB_PGSQL->table("tbtr_tempso")
+                            ->join("tbmaster_prodmast",function($join){
+                                $join->on("temp_plu" ,"=" ,"prd_prdcd");
+                            })
                              ->whereRaw("temp_plu LIKE '%$data%'")
                              ->whereRaw("temp_recordid is null")
                              ->get();
-
-            if (count($check_data) > 0) {
-                return response()->json(['errors'=>true,'messages'=>"Kode Plu Sudah Ada (".data.")"],500);
-            } else {
-                $data = $this->DB_PGSQL->table("tbmaster_lokasi")
-                        ->selectRaw("
-                            LKS_PRDCD
-                        ")
-                        ->distinct()
-                        ->whereRaw("LKS_PRDCD ='$data'")
-                        ->get();
-            }
+                             
+            $data = $this->DB_PGSQL->table("tbmaster_lokasi")
+                    ->selectRaw("
+                        LKS_PRDCD
+                    ")
+                    ->distinct()
+                    ->whereRaw("LKS_PRDCD ='$data'")
+                    ->get();
 
         } else {
             $check_data = $this->DB_PGSQL->table("tbtr_tempso")
@@ -115,7 +126,7 @@ class InitialSOController extends Controller
                              ->whereRaw("temp_recordid is null")
                              ->get();
             if (count($check_data) > 0) {
-                return response()->json(['errors'=>true,'messages'=>"Kode Subrak Sudah Ada (".data.")"],500);
+                return  ['errors'=>true,'messages'=>"Kode Subrak Sudah Ada (".$data.")"];
             } else {
                     $koderak = explode(".", $data)[0];
                     $subrak = explode(".", $data)[1];
@@ -130,6 +141,7 @@ class InitialSOController extends Controller
                         ->get();
             }
         }
+        
         foreach ($data as $key => $row) {
             $data_insert[] = [
                 "temp_recordid" =>null,
@@ -139,17 +151,24 @@ class InitialSOController extends Controller
                 "temp_create_dt" => date('Y-m-d H:i:s'),
             ];
         }
-
         try {
             $this->DB_PGSQL->beginTransaction();
-            $this->DB_PGSQL->table("tbtr_tempso")->insert($data_insert);
-            
+            $response = null;
+            if(count($check_data) && $check_data[0]->temp_recordid){
+                $response = ['errors'=>true,'messages'=>"Kode Plu Sudah Ada (".$data.")"];
+            }elseif(!count($check_data)){
+                $this->DB_PGSQL->table("tbtr_tempso")->insert($data_insert);
+                $response = ['errors'=>false,'messages'=>"success"];
+            }else{
+                $response = ['errors'=>false,'messages'=>"success"];
+            }
             $this->DB_PGSQL->commit();
+            return $response;
         } catch (\Throwable $th) {
             
             $this->DB_PGSQL->rollBack();
             // dd($th);
-            return response()->json(['errors'=>true,'messages'=>$th->getMessage()],500);
+            return ['errors'=>true,'messages'=>$th->getMessage()];
         }
         
         
