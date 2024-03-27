@@ -2,7 +2,8 @@ let selectedTable,
     selectedData  =  [],
     dataPLU =[],
     listPLU =[],
-    listMasterProduk = [],
+    listDataPLU = [],
+    listDataRak = [],
     search  =  false,
     page = 1,
     field = null,
@@ -79,7 +80,7 @@ changePRDCD=(data)=>{
 
 getDataPlu =()=>{
    let select = "";
-       listMasterProduk = [];
+       listDataPLU = [];
 
    $('#label-tag').loading('toggle');
    $.getJSON(link + "/api/data/plu", function(data) {
@@ -87,7 +88,7 @@ getDataPlu =()=>{
       if(data){
          $.each(data,function(key,value){
                select+=` <option value="${value.prdcd}" >(${value.prdcd})</option>`;
-               listMasterProduk[value.prdcd] = value;
+               listDataPLU[value.prdcd] = value;
 
          });
          $("#prdcd").append(select);
@@ -101,15 +102,15 @@ getDataPlu =()=>{
 
 getDataRak =()=>{
    let select = "";
-       listMasterProduk = [];
+       listDataRak = [];
 
    $('#label-tag').loading('toggle');
    $.getJSON(link + "/api/data/rak", function(data) {
      
       if(data){
          $.each(data,function(key,value){
-               select+=` <option value="${value.prdcd}" >(${value.prdcd})</option>`;
-               listMasterProduk[value.prdcd] = value;
+               select+=` <option value="${value.subrak}" >(${value.subrak})</option>`;
+               listDataRak[value.prdcd] = value;
 
          });
          $("#sub-rak").append(select);

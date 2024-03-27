@@ -47,10 +47,10 @@ class InitialSOController extends Controller
                                     $join->on("lks_prdcd" ,"=" ,"prd_prdcd");
                                 })
                                ->selectRaw("
-                                    lks_prdcd as prdcd
+                                    CONCAT(lks_koderak, '.', lks_kodesubrak) AS SUBRAK
                                ")
                                ->distinct()
-                               ->orderBy($this->DB_PGSQL->raw("lks_prdcd"))
+                               ->orderBy($this->DB_PGSQL->raw("subrak"))
                                ->get();
         return $data_master_produk;
     }

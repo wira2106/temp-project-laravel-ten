@@ -87,59 +87,70 @@
                                                 <label>By PLU:</label>
                                             </div>
                                         </div>
-                                        <div class="row d-flex justify-content-center">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="prdcd">PRDCD</label>
-                                                    <div class="form-group">
-                                                        <select class="form-control select2 input-data by-plu" name="prdcd" id="prdcd" onchange="changePRDCD(this)">
-                                                            <option value="" disabled selected>Pilih PRDCD</option>
-                                                        
-                                                        </select>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="row d-flex justify-content-center">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="prdcd">PRDCD</label>
+                                                            <div class="form-group">
+                                                                <select class="form-control select2 input-data by-plu" name="prdcd" id="prdcd" onchange="changePRDCD(this)">
+                                                                    <option value="" disabled selected>Pilih PRDCD</option>
+                                                                
+                                                                </select>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                
+                                                <!-- <div class="row d-flex justify-content-center">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="desc">Desc</label>
+                                                            <textarea readonly class="form-control input-data by-plu" name="desc" id="desc" cols="30" rows="10"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div> -->
+            
+                                                <div class="row d-flex justify-content-center">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="satuan">Kategori</label>
+                                                            <select class="form-control select2 input-data by-plu kategori" name="kategori" onchange="changePRDCD(this)">
+                                                                <option value="">ALL</option>
+                                                                <option value="fast moving">Fast Moving</option>
+                                                                <option value="slow moving">Slow Moving</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
                                             </div>
                                         </div>
-                                        
-                                        <!-- <div class="row d-flex justify-content-center">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="desc">Desc</label>
-                                                    <textarea readonly class="form-control input-data by-plu" name="desc" id="desc" cols="30" rows="10"></textarea>
+                                        <div class="card mt-2">
+                                            <div class="card-body">
+                                                
+                                                <div class="row d-flex justify-content-center">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="satuan">Jenis SO IC</label>
+                                                            <select class="form-control select2 input-data by-plu" name="jenis">
+                                                                <option value="regular">Regular</option>
+                                                                <option value="uji_petik">Uji Petik</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div> -->
-    
-                                        <div class="row d-flex justify-content-center">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="satuan">Kategori</label>
-                                                    <select class="form-control select2 input-data by-plu kategori" name="kategori" onchange="changePRDCD(this)">
-                                                        <option value="">ALL</option>
-                                                        <option value="fast moving">Fast Moving</option>
-                                                        <option value="slow moving">Slow Moving</option>
-                                                    </select>
+        
+                                                <div class="row d-flex justify-content-center">
+                                                    <div class="col-md-12">
+                                                        <div class="form-group d-flex justify-content-center">
+                                                           <input type="hidden" class="form-control text" name="" value="Apa anda yakinStart SO?">
+                                                           <button class="btn btn-lg btn-primary" type="submit">Start SO</button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="row d-flex justify-content-center">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="satuan">Jenis SO IC</label>
-                                                    <select class="form-control select2 input-data by-plu" name="jenis">
-                                                        <option value="regular">Regular</option>
-                                                        <option value="uji_petik">Uji Petik</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-    
-                                        <div class="row d-flex justify-content-center">
-                                            <div class="col-md-12">
-                                                <div class="form-group d-flex justify-content-center">
-                                                   <input type="hidden" class="form-control text" name="" value="Apa anda yakinStart SO?">
-                                                   <button class="btn btn-sm btn-primary" type="submit">Start SO</button>
-                                                </div>
+
                                             </div>
                                         </div>
                                     </form>
